@@ -28,53 +28,6 @@ aclocal_vers=1.4
 
 program=`basename $0`
 
-if (autoconf --version) < /dev/null > /dev/null 2>&1 ; then
-    if (autoconf --version | awk 'NR==1 { if( $3 >= '$autoconf_vers') \
-			       exit 1; exit 0; }');
-    then
-       echo "$program: ERROR: \`autoconf' is too old."
-       echo "           (version $autoconf_vers or newer is required)"
-       DIE="yes"
-    fi
-else
-    echo
-    echo "$program: ERROR: You must have \`autoconf' installed to compile $PACKAGE."
-    echo "           (version $autoconf_vers or newer is required)"
-    DIE="yes"
-fi
-
-# Ensure that these are created by the versions on this system
-# (indirectly via automake)
-rm -f libtool ltmain.sh
-if (automake --version) < /dev/null > /dev/null 2>&1 ; then
-  if (automake --version | awk 'NR==1 { if( $4 >= '$automake_vers') \
-			     exit 1; exit 0; }');
-     then
-     echo "$program: ERROR: \`automake' is too old."
-     echo "           (version $automake_vers or newer is required)"
-     DIE="yes"
-  fi
-  if (aclocal --version) < /dev/null > /dev/null 2>&1; then
-    if (aclocal --version | awk 'NR==1 { if( $4 >= '$aclocal_vers' ) \
-						exit 1; exit 0; }' );
-    then
-      echo "$program: ERROR: \`aclocal' is too old."
-      echo "           (version $aclocal_vers or newer is required)"
-      DIE="yes"
-    fi
-  else
-    echo
-    echo "$program: ERROR: Missing \`aclocal'"
-    echo "           The version of automake installed doesn't appear recent enough."
-    DIE="yes"
-  fi
-else
-    echo
-    echo "$program: ERROR: You must have \`automake' installed to compile $PACKAGE."
-    echo "           (version $automake_vers or newer is required)"
-    DIE="yes"
-fi
-
 
 if test "X$DIE" != X; then
   exit 1
