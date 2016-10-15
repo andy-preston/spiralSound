@@ -1,5 +1,5 @@
 /*  SpiralSound
- *  Copyleft (C) 2002 Andy Preston <andy@clubunix.co.uk>
+ *  Copyleft (C) 2002 Andy Preston <edgeeffect@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,42 +16,36 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef LFOPLUGIN
-#define LFOPLUGIN
+#ifndef LFOModule
+#define LFOModule
 
-#include "../SpiralPlugin.h"
-#include <FL/Fl_Pixmap.H>
+#include "../SpiralModule.h"
 
 static const int NUM_TABLES = 6;
 static const int DEFAULT_TABLE_LEN = 1024;
 
-class LFOPlugin : public SpiralPlugin {
-   public:
-      LFOPlugin();
-      virtual ~LFOPlugin();
-      virtual PluginInfo &Initialise (const HostInfo *Host);
-      virtual SpiralGUIType* CreateGUI();
-      virtual void Execute();
-      virtual void Reset();
-
-      virtual void StreamOut (std::ostream &s);
-      virtual void StreamIn (std::istream &s);
-      //typedef char Type;
-      enum Type {SINE, TRIANGLE, SQUARE, SAW};
-      void WriteWaves();
-      void NoteTrigger (int V, int s, int v);
-      float GetFreq() { return m_Freq; }
-      Type GetType() { return m_Type; }
-   private:
-      float AdjustPos (float pos);
-      // Voice specific parameter
-      int m_Note;
-      float m_CyclePos;
-      // Common voice parameters
-      Type m_Type;
-      float m_Freq;
-      Sample m_Table[NUM_TABLES];
-      int m_TableLength;
+class LFOModule : public SpiralModule {
+    public:
+        LFOModule();
+        virtual ~LFOModule();
+        virtual ModuleInfo &Initialise(const HostInfo *Host);
+        virtual void Execute();
+        virtual void Reset();
+        virtual void StreamOut(std::ostream &s);
+        virtual void StreamIn(std::istream &s);
+        enum Type {SINE, TRIANGLE, SQUARE, SAW};
+        void WriteWaves();
+        void NoteTrigger(int V, int s, int v);
+        float m_Freq;
+        Type m_Type;
+    private:
+        float AdjustPos (float pos);
+        // Voice specific parameter
+        int m_Note;
+        float m_CyclePos;
+        // Common voice parameters
+        Sample m_Table[NUM_TABLES];
+        int m_TableLength;
 };
 
 #endif
