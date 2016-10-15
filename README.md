@@ -15,6 +15,13 @@ GUI.
 Where SSM was a straight software modular synth SpiralSound is more of a kit
 for building your own soft-synths.
 
+Warning
+-------
+
+Whilst I'm doing the basic reworking of SSM into SpiralSound - there's a lot
+of GIT history rewriting going on. If you check this code out don't be surprised
+if when you come to do a PULL everything goes kerpooie!
+
 
 Dependancies
 ------------
