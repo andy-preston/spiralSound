@@ -1,58 +1,43 @@
-****** SpiralSynthModular ******
+SpiralSound
+===========
 
-Last changed Tuesday 11-March-2004.
+Last changed 15 October 2016 (Last time I was typing here it was 11-March-2004)
 
-SpiralSynthModular is open source software, distributed under the General
+SpiralSound is open source software, distributed under the General
 Public License (GPL). See the file COPYING.
 
-See www.pawfal.org or sourceforge.net/projects/spiralmodular for more details.
+See https://github.com/edgeeffect/spiralSound for more details.
+
+SpiralSound is the same codebase as good old SpiralSynthModular reduced down
+to a library to achieve the same results programatically rather than using a
+GUI.
+
+Where SSM was a straight software modular synth SpiralSound is more of a kit
+for building your own soft-synths.
 
 
-*** Warning ***
-
-If you are using GCC version 3, you should note that the libstdc++ included with
-the compiler uses code from the system C library (glibc) version 2.2.5. That
-version of glibc is over a year old and contains necessary bugfixes. Some people
-have reported that their distro. contains an older version, which leads to SSM
-crashing with a segfault almost immediately.
-
-
-*** Dependancies ***
-
-FLTK (www.fltk.org)
-If you build FLTK from source make sure you use "./configure --enable-shared"
+Dependancies
+------------
 
 LADSPA plugins  (www.ladspa.org)
 
 Sound output can be provided by either OSS or JACK (and therefore alsa).
 
+Installing
+----------
 
-*** Installing ***
+(With such a massive rewrite in progress, your chances of this working are
+minimal at best)
 
-To build the SpiralSynthModular application, and all the plugins:
+To build SpiralSound:
 
 ./configure
 make
 make install
 spiralsynthmodular
 
-Check out the designs in the Examples directory.
-For more examples be sure to check out the noize farm
-(http://groups.yahoo.com/group/noize_farm) an open source repository of
-ssm patches.
-
-usage:
-spiralsynthmodular options [patch.ssm]
-
-options list:
--h : help
--v : print version
---NoGUI : run without GUI (only useful when loading patch from command line
---Realtime : spawn audio thread with FIFO scheduling (run as root)
---PluginPath <PATH> : look for plugins in the specified directory
-
-
-*** LRDF support for LADSPA plugins ***
+LRDF support for LADSPA plugins
+-------------------------------
 
 http://plugin.org.uk/releases/lrdf/
 http://www.redland.opensource.ac.uk/raptor/
@@ -63,34 +48,31 @@ the LADSPAPlugin will automatically use it.
 To disable detection of this this, use the configure option:
 ./configure --disable-liblrdf
 
-
-*** Jack support ***
+Jack support
+------------
 
 http://jackit.sourceforge.net
 
 If you have jack installed on your system, you can use it via the
-JackPlugin.
-
-To load the plugin, add it to .SpiralSynthModular's plugin list after
-installation.
+JackModule.
 
 To disable detection of jack, use the configure option:
 ./configure --disable-jack
 
-
-*** LibSndFile Support ***
+LibSndFile Support
+------------------
 
 http://www.zip.com.au/~erikd/libsndfile/
 
 If you have libsndfile installed on you system; PoshSampler, Streamer,
-and SpiralLoops load any audio format/file that libsndfile can, though
-the Open Dialog Filter currently doesn't reflect this.
+and SpiralLoops load any audio format/file that libsndfile can.
 
 To disable detection of this, use the configure option:
 ./configure --disable-sndfile
 
 
-*** Setting up your .spiralmodular file ***
+Setting up your .spiralmodular file
+-----------------------------------
 
 This file contains all the setup variables for the program. Thes values can be
 edited with the options window whilst running SSM.
@@ -107,20 +89,13 @@ FragmentCount     = 8           - Subbuffer count, -1 computes a suitable size,
 Samplerate        = 44100       - Sets the samplerate
 
 
-*** Trying it out without installing ***
+Disclaimer
+----------
 
-You can try SpiralSynthModular by running the script ./test-run
-which creates a dummy plugin directory in your source directory
-and runs SpiralSynthModular using these uninstalled plugins.
-
-
-Disclaimer:
 No representations are made about the suitability of this software
 for any purpose. This software is provided "as is" without express
 or implied warranty.
 (Damage to ears, speakers or buildings are not my fault :))
 
-Dave Griffiths (Headmaster) - dave@pawfal.org
-Andy Preston (Caretaker) - andy@clubunix.co.uk
-
-www.pawfal.org
+Andy Preston (Maintainer) - edgeeffect@gmail.com
+Dave Griffiths (Original Author) - dave@pawfal.org
