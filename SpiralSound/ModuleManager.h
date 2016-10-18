@@ -14,48 +14,50 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/ 
+*/
 
-#include <FL/Fl_Double_Window.H>
-#include <FL/Fl_Pixmap.H>
 #include <iostream>
 #include <vector>
-#include "Plugins/SpiralPlugin.h"
+#include "Modules/SpiralModule.h"
 
 struct HostsideInfo
 {
 	void* Handle;
-	int   ID;
-	char **(*GetIcon)(void);
-	SpiralPlugin *(*CreateInstance)(void);
-	int           (*GetID)(void);
-	string        (*GetGroupName)(void);
+	int ID;
+	SpiralModule *(*CreateInstance)(void);
+	int (*GetID)(void);
 };
 
 //////////////////////////////////////////////////////////
 
-typedef int PluginID;
-#define     PluginError -1
+typedef int ModuleID;
+#define ModuleError -1
 
-class PluginManager
+class ModuleManager
 {
-public:
-	static PluginManager *Get() { if(!m_Singleton) m_Singleton=new PluginManager; return m_Singleton; }
-	static void         PackUpAndGoHome() { if(m_Singleton) delete m_Singleton; }
-
-	PluginID            LoadPlugin(const char *PluginName);
-	void                UnLoadPlugin(PluginID ID);
-	void                UnloadAll();
-	const HostsideInfo* GetPlugin(PluginID ID);
-	bool                IsValid(PluginID ID);
-	int					GetIdByName(string Name);
-				   
-private:
-
-	PluginManager();
-	~PluginManager();
-	HostsideInfo *GetPlugin_i(PluginID ID);
-	
-	vector<HostsideInfo*> m_PluginVec;
-	static PluginManager *m_Singleton;
-};	
+    public:
+        static ModuleManager *Get()
+        {
+            if (!m_Singleton) {
+                m_Singleton = new ModuleManager;
+            }
+            return m_Singleton;
+        }
+        static void PackUpAndGoHome()
+        {
+            if (m_Singleton) {
+                delete m_Singleton;
+            }
+        }
+        ModuleID LoadModule(const char *ModuleName);
+        void UnLoadModule(ModuleID ID);
+        void UnloadAll();
+        const HostsideInfo* GetModule(ModuleID ID);
+        bool IsValid(ModuleID ID);
+    private:
+        ModuleManager();
+        ~ModuleManager();
+        HostsideInfo *GetModule_i(ModuleID ID);
+        vector<HostsideInfo*> m_ModuleVec;
+        static ModuleManager *m_Singleton;
+};

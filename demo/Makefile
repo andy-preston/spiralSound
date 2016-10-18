@@ -2,18 +2,16 @@
 # Makefile for building SpiralSound demo synth
 #############################################################################
 
-
 ####### Compiler, tools and options
 
-CC	=	gcc
-CXX	=	g++
-CFLAGS	=	@CFLAGS@ @FLTK_CFLAGS@
-CXXFLAGS=	@CXXFLAGS@ @FLTK_CXXFLAGS@
-INCPATH	=
+CC		=	gcc
+CXX		=	g++
+CFLAGS	=
+CXXFLAGS=
+INCPATH	=   /usr/include/c++/4.8/
 LINK	=	g++
 LFLAGS	=
-LIBS	=   @FLTK_LIBS@ -lm -ldl -lpthread
-CC = gcc
+LIBS	=   -lm -ldl -lpthread
 
 ####### Files
 
@@ -22,9 +20,9 @@ HEADERS = \
 	../SpiralSound/GraphSort.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h \
-	../SpiralSound/PluginManager.h \
+	../SpiralSound/ModuleManager.h \
 	../SpiralSound/ChannelHandler.h \
-	../SpiralSound/Plugins/SpiralPlugin.h \
+	../SpiralSound/Modules/SpiralModule.h \
 
 SOURCES = \
 	main.cpp \
@@ -32,9 +30,9 @@ SOURCES = \
 	../SpiralSound/GraphSort.C \
 	../SpiralSound/SpiralInfo.C \
 	../SpiralSound/Sample.C \
-	../SpiralSound/PluginManager.C \
+	../SpiralSound/ModuleManager.C \
 	../SpiralSound/ChannelHandler.C \
-	../SpiralSound/Plugins/SpiralPlugin.C \
+	../SpiralSound/Modules/SpiralModule.C \
 
 OBJECTS = \
 	main.o \
@@ -42,10 +40,10 @@ OBJECTS = \
 	../SpiralSound/GraphSort.o \
 	../SpiralSound/SpiralInfo.o \
 	../SpiralSound/Sample.o \
-	../SpiralSound/PluginManager.o \
+	../SpiralSound/ModuleManager.o \
 	../SpiralSound/ChannelHandler.o \
-	../SpiralSound/Plugins/SpiralPlugin.o \
-	../SpiralSound/Plugins/SpiralPluginGUI.o
+	../SpiralSound/Modules/SpiralModule.o \
+	../SpiralSound/Modules/Spiralgit guiGUI.o
 
 TARGET = \
 	littlesynth
@@ -90,8 +88,8 @@ LittleSynth.o: \
 	LittleSynth.C \
 	LittleSynth.h \
 	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/PluginManager.h \
-	../SpiralSound/Plugins/SpiralPlugin.h
+	../SpiralSound/ModuleManager.h \
+	../SpiralSound/Modules/SpiralModule.h
 
 GraphSort.o: \
 	GraphSort.C \
@@ -111,17 +109,17 @@ GraphSort.o: \
 	../SpiralSound/Sample.h \
 	../SpiralSound/SpiralInfo.h
 
-SpiralSound/Plugins/SpiralPlugin.o: \
-	../SpiralSound/Plugins/SpiralPlugin.C \
-	../SpiralSound/Plugins/SpiralPlugin.h \
+SpiralSound/Modules/SpiralModule.o: \
+	../SpiralSound/Modules/SpiralModule.C \
+	../SpiralSound/Modules/SpiralModule.h \
 	../SpiralSound/Sample.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h
 
-../SpiralSound/PluginManager.o: \
-	../SpiralSound/PluginManager.C \
-	../SpiralSound/PluginManager.h \
+../SpiralSound/ModuleManager.o: \
+	../SpiralSound/ModuleManager.C \
+	../SpiralSound/ModuleManager.h \
 	../SpiralSound/Sample.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h \
-	../SpiralSound/Plugins/SpiralPlugin.h
+	../SpiralSound/Modules/SpiralModule.h

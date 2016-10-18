@@ -19,8 +19,6 @@
 #ifndef SpiralINFO
 #define SpiralINFO
 
-#include <iostream>
-#include <string>
 #include <vector>
 #include <stdlib.h>
 #include "Sample.h"
@@ -28,7 +26,7 @@
 using namespace std;
 
 // todo: better place for these util funcs
-float RandFloat (float s=0.0f, float e=1.0f);
+float RandFloat (float s = 0.0f, float e = 1.0f);
 
 // Loads info from the resource file
 
@@ -36,55 +34,17 @@ class SpiralInfo {
    public:
       SpiralInfo();
       ~SpiralInfo() {}
-      void LoadPrefs();
-      void SavePrefs();
-      static void Alert (string Text);
-      static void Log (string Text);
-      static int    BUFSIZE;
-      static int    FRAGSIZE;
-      static int    FRAGCOUNT;
-      static int    SAMPLERATE;
-      static long   MAXSAMPLE;
-      static float  VALUECONV;
-      static bool   WANTMIDI;
-      static int    FILTERGRAN;
-      static string OUTPUTFILE;
-      static string MIDIFILE;
-      static bool   USEPLUGINLIST;
-      static int    POLY;
-      static string LOCALE;
-      static unsigned GUI_COLOUR;
-      static unsigned SCOPE_BG_COLOUR;
-      static unsigned SCOPE_FG_COLOUR;
-      static unsigned SCOPE_SEL_COLOUR;
-      static unsigned SCOPE_IND_COLOUR;
-      static unsigned SCOPE_MRK_COLOUR;
-      static SpiralInfo* Get();
-      void SetColours();
-      static string PLUGIN_PATH;
-      static vector<string> PLUGINVEC;
-      static int GUICOL_Tool;
-      static int GUICOL_Button;
-      static int GUICOL_Canvas;
-      static int GUICOL_Device;
-      static int GUIDEVICE_Box;
-   private:
-      string m_ResFileName;
-      int m_Version;
-      static SpiralInfo *m_SpiralInfo;
-
-      void StreamOutMainColourPrefs (ostream &s);
-      bool StreamInMainColourPrefs (istream &s, string &section, string &ident);
-      
-      void StreamOutDeviceColourPrefs (ostream &s);
-      bool StreamInDeviceColourPrefs (istream &s, string &section, string &ident);
-      
-      void StreamOutAudioSettingsPrefs (ostream &s);
-      bool StreamInAudioSettingsPrefs (istream &s, string &section, string &ident);
-
-      void StreamInPrefs (istream &s);
-      void StreamOutPrefs (ostream &s);
+      int BUFSIZE;
+      int FRAGSIZE;
+      int FRAGCOUNT;
+      int SAMPLERATE;
+      long MAXSAMPLE;
+      float VALUECONV;
+      bool WANTMIDI;
+      int FILTERGRAN;
+      char *OUTPUTFILE;
+      char *MIDIFILE;
+      int POLY;
 };
 
 #endif
-
