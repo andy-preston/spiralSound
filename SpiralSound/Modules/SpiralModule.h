@@ -32,7 +32,6 @@ static const float MAX_FREQ = 13000;
 
 struct ModuleInfo
 {
-	std::string Name;
 	int NumInputs;
 	int NumOutputs;
 	std::vector<int> PortTypes;
@@ -41,17 +40,9 @@ struct ModuleInfo
 
 struct HostInfo
 {
-	int    BUFSIZE;
-	int    SAMPLERATE;
-
-	/* obsolete - REMOVE SOON */
-	int    FRAGSIZE;
-	int    FRAGCOUNT;
-	std::string OUTPUTFILE;
-	std::string MIDIFILE;
-	int    POLY;
-
-	bool   PAUSED;
+	int BUFSIZE;
+	int SAMPLERATE;
+	bool PAUSED;
 };
 
 /////////////////////////////////////////////////////////////////////
