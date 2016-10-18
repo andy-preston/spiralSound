@@ -31,73 +31,7 @@
 #include "SpiralSynthModular.h"
 #include "SpiralSound/SpiralInfo.h"
 
-pthread_t loopthread,watchdogthread;
 SynthModular *synth;
-
-char watchdog_check = 1;
-char gui_watchdog_check = 1;
-
-int pthread_create_realtime (pthread_t *new_thread,
-			 void *(*start)(void *), void *arg,
-			 int priority);
-
-bool CallbackOnly = false;
-bool FIFO = false;
-bool GUI = true;
-
-/////////////////////////////////////////////////////////////
-
-void watchdog (void *arg)
-{
-	pthread_setcanceltype (PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-
-	watchdog_check = 0;
-	gui_watchdog_check = 0;
-
-	while (1)
-	{
-		usleep (10000000);
-		// gui watchdog goes off with modal dialog boxes
-		if (watchdog_check == 0)// || gui_watchdog_check== 0)
-		{
-			cerr<<"ssm watchdog: timeout - killing ssm"<<endl;
-			if (watchdog_check==0) cerr<<"diagnosis: audio hung?"<<endl;
-			if (gui_watchdog_check==0) cerr<<"diagnosis: gui starved by audio"<<endl;
-			exit (1);
-		}
-		watchdog_check = 0;
-		gui_watchdog_check = 0;
-	}
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void audioloop(void* o)
-{
-	while(1)
-	{
-		if (!synth->CallbackMode())
-		{
-			// do funky stuff
-			synth->Update();
-
-			// put the brakes on if there is no blocking output running
-			if (!synth->IsBlockingOutputPluginReady()||
-				 synth->IsFrozen())
-			{
-				usleep(10000);
-			}
-		}
-		else
-		{
-			// the engine is currently in callback mode, so we don't
-			// need to do anything unless we are switched back
-			usleep(1000000);
-		}
-
-		watchdog_check = 1;
-	}
-}
 
 //////////////////////////////////////////////////////
 #if __APPLE__
@@ -173,6 +107,8 @@ int main(int argc, char **argv)
 	Fl::visual(FL_DOUBLE|FL_RGB);
 	
 	synth=new SynthModular;
+    spawnAudioThread(false);
+	for (;;) sleep(1);
 
 	// setup the synth
 	Fl_Window* win = synth->CreateWindow();
@@ -180,19 +116,6 @@ int main(int argc, char **argv)
 	synth->LoadPlugins(cmd_pluginPath);
 	win->xclass("");
 	if (GUI) win->show(1, argv); // prevents stuff happening before the plugins have loaded
-	
-	// spawn the audio thread
-	if (FIFO) 
-	{	
-		pthread_create_realtime(&watchdogthread,(void*(*)(void*))watchdog,NULL,sched_get_priority_max(SCHED_FIFO));
-		pthread_create_realtime(&loopthread,(void*(*)(void*))audioloop,NULL,sched_get_priority_max(SCHED_FIFO)-1);
-	}
-	else 
-	{
-		pthread_create(&loopthread,NULL,(void*(*)(void*))audioloop,NULL);
-		// reduce the priority of the gui
-		if (setpriority(PRIO_PROCESS,0,20)) cerr<<"Could not set priority for GUI thread"<<endl;
-	}
 	
 	// do we need to load a patch on startup? 
     if (cmd_specd) synth->LoadPatch(cmd_filename.c_str());        
@@ -218,47 +141,4 @@ int main(int argc, char **argv)
 	return 1;
 }
 
-// nicked from Paul Barton-Davis' Ardour code :)
-int pthread_create_realtime (pthread_t *new_thread,
-			 void *(*start)(void *), void *arg,
-			 int priority)
-
-{	
-	pthread_attr_t *rt_attributes;
-	struct sched_param *rt_param;
-	int retval;
-
-	rt_attributes = (pthread_attr_t *) malloc (sizeof (pthread_attr_t));
-	rt_param = (struct sched_param *) malloc (sizeof (struct sched_param));
-
-	pthread_attr_init (rt_attributes);
-
-	if (seteuid (0)) {
-		cerr << "Cannot obtain root UID for RT scheduling operations"
-		      << endl;
-		return -1;
-
-	} else {
-
-	    if (pthread_attr_setschedpolicy (rt_attributes, SCHED_FIFO)) {
-		cerr << "Cannot set FIFO scheduling attributes for RT thread" << endl;
-
-	    }
-	    
-	    if (pthread_attr_setscope (rt_attributes, PTHREAD_SCOPE_SYSTEM)) {
-		cerr << "Cannot set scheduling scope for RT thread" << endl;
-
-	    }
-	    
-	    rt_param->sched_priority = priority;
-	    if (pthread_attr_setschedparam (rt_attributes, rt_param)) {
-		cerr << "Cannot set scheduling priority for RT thread" << endl;
-
-	    }
-	}
-
-	retval = pthread_create (new_thread, rt_attributes, start, arg);
-	seteuid (getuid());
-
-	return retval;
 }
