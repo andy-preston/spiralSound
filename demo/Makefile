@@ -16,7 +16,7 @@ LIBS	=   -lm -ldl -lpthread
 ####### Files
 
 HEADERS = \
-	LittleSynth \
+	../SpiralSound/synthModular.h \
 	../SpiralSound/GraphSort.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h \
@@ -26,7 +26,7 @@ HEADERS = \
 
 SOURCES = \
 	main.cpp \
-	LittleSynth.C \
+	../SpiralSound/synthModular.C \
 	../SpiralSound/GraphSort.C \
 	../SpiralSound/SpiralInfo.C \
 	../SpiralSound/Sample.C \
@@ -36,7 +36,7 @@ SOURCES = \
 
 OBJECTS = \
 	main.o \
-	LittleSynth.o \
+	../SpiralSound/synthModular.o \
 	../SpiralSound/GraphSort.o \
 	../SpiralSound/SpiralInfo.o \
 	../SpiralSound/Sample.o \
@@ -46,7 +46,7 @@ OBJECTS = \
 	../SpiralSound/Modules/Spiralgit guiGUI.o
 
 TARGET = \
-	littlesynth
+	demosynth
 
 ####### Implicit rules
 
@@ -82,11 +82,11 @@ clean:
 
 main.o : \
 	main.cpp \
-	LittleSynth.h
+	../SpiralSound/synthModular.h
 
-LittleSynth.o: \
-	LittleSynth.C \
-	LittleSynth.h \
+../SpiralSound/synthModular.o: \
+	../SpiralSound/synthModular.C \
+	../SpiralSound/synthModular.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/ModuleManager.h \
 	../SpiralSound/Modules/SpiralModule.h

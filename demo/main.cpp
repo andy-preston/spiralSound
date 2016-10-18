@@ -23,19 +23,25 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include "LittleSynth.h"
+#include "../SpiralSound/synthModular.h"
 #include "../SpiralSound/SpiralInfo.h"
 #include "../SpiralSound/Thread.h"
+#include "../SpiralSound/Modules/OscillatorModule/OscillatorModule.h"
 
 int main(int argc, char **argv)
 {
     SpiralInfo *info;
     SynthModular *synth;
+    OscillatorModule *oscillator;
+
+    srand(time(NULL));
     info = new SpiralInfo();
     info->OUTPUTFILE = "/dev/dsp";
 
-    srand(time(NULL));
-	synth=new SynthModular(info);
+	synth = new SynthModular(info);
+    oscillator = new OscillatorModule();
+    synth->addModule(oscillator);
+
     spawnAudioThread(false);
 	for (;;) sleep(1);
 	return 1;
