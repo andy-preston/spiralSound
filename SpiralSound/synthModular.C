@@ -27,9 +27,8 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <dlfcn.h>
-#include "LittleSynth.h"
-#include "../SpiralSound/ModuleManager.h"
-#include "../SpiralSound/Thread.h"
+#include "synthModular.h"
+#include "ModuleManager.h"
 
 //#define DEBUG_MODULES
 //#define DEBUG_STREAM
@@ -44,19 +43,11 @@ bool SynthModular::m_BlockingOutputModuleIsReady = false;
 SynthModular::SynthModular(SpiralInfo *info) {
     m_spiralInfo = info;
     m_Frozen = false;
-    m_NextID = 0;
 
 	/* Shared Audio State Information  */
 	m_Info.BUFSIZE = m_spiralInfo->BUFSIZE;
 	m_Info.SAMPLERATE = m_spiralInfo->SAMPLERATE;
 	m_Info.PAUSED = false;
-
-	/* obsolete - REMOVE SOON  */
-	m_Info.FRAGSIZE = m_spiralInfo->FRAGSIZE;
-	m_Info.FRAGCOUNT = m_spiralInfo->FRAGCOUNT;
-	m_Info.OUTPUTFILE = m_spiralInfo->OUTPUTFILE;
-	m_Info.MIDIFILE = m_spiralInfo->MIDIFILE;
-	m_Info.POLY = m_spiralInfo->POLY;
 
 	m_CH.Register("Frozen", &m_Frozen);
 }
@@ -71,31 +62,16 @@ SynthModular::~SynthModular()
 
 //////////////////////////////////////////////////////////
 
-void SynthModular::ClearUp()
-{
-	FreezeAll();
-	for(map<int,DeviceWin*>::iterator i=m_DeviceWinMap.begin();
-		i!=m_DeviceWinMap.end(); i++)
-	{
-        //Stop processing of audio if any
-		if (i->second->m_Device) {
-			if (i->second->m_Device->Kill());
-		}
-		//Delete Device
-		delete i->second->m_Device;
-		i->second->m_Device=NULL;
-	}
-	m_DeviceWinMap.clear();
-	m_NextID=0;
-	ThawAll();
-}
-
-//////////////////////////////////////////////////////////
 void SynthModular::Update()
 {
 	m_CH.UpdateDataNow();
 
 	if (m_Frozen) return;
+
+    // DeviceWinMap was a map of plugin GUI's and their plugins
+    // it's gone now - but we are going to need something else to
+    // do a simillar job, I think
+    // (or are we? it's all about how control signals come from outside into the modules)
 
 	// for all the Modules
 	for(map<int,DeviceWin*>::iterator i=m_DeviceWinMap.begin();
@@ -235,36 +211,6 @@ void SynthModular::LoadModules (string modulePath) {
 //////////////////////////////////////////////////////////
 
 
-DeviceWin* SynthModular::NewDeviceWin(int n, int x, int y)
-{
-	DeviceWin *nlw = new DeviceWin;
-	const HostsideInfo* Module=ModuleManager::Get()->GetModule(n);
-
-	if (!Module) return NULL;
-
-	nlw->m_Device=Module->CreateInstance();
-
-	if (!nlw->m_Device) return NULL;
-
-        nlw->m_Device->SetBlockingCallback(cb_Blocking);
-	nlw->m_Device->SetUpdateCallback(cb_Update);
-	nlw->m_Device->SetParent((void*)this);
-
-	if ( nlw->m_Device->IsAudioDriver() )
-	{
-		AudioDriver *driver = ((AudioDriver*)nlw->m_Device);
-		driver->SetChangeBufferAndSampleRateCallback(cb_ChangeBufferAndSampleRate);
-	}
-
-	ModuleInfo PInfo    = nlw->m_Device->Initialise(&m_Info);
-	nlw->m_ModuleID     = n;
-
-	if (temp) temp->position(x+10,y);
-
-	return nlw;
-}
-
-//////////////////////////////////////////////////////////
 
 void SynthModular::cb_ChangeBufferAndSampleRate_i(long int NewBufferSize, long int NewSamplerate)
 {
@@ -316,7 +262,7 @@ void SynthModular::cb_Update(void* o, bool mode)
 // take control of the update timing (so take the brakes off)
 void SynthModular::cb_Blocking(void* o, bool mode)
 {
-	m_BlockingOutputModuleIsReady=mode;
+	m_BlockingOutputModuleIsReady = mode;
 }
 
 //////////////////////////////////////////////////////////
@@ -441,31 +387,7 @@ iostream &SynthModular::StreamPatchIn(iostream &s, bool paste, bool merge)
 			}
 		}
 
-		if (ModuleID==COMMENT_ID)
-		{
-			DeviceWin* temp = NewComment(ModuleID, x, y);
-			if (temp)
-			{
-				if (paste || merge)
-				{
-					m_Copied.m_DeviceIds[ID] = m_NextID++;
-					ID = m_Copied.m_DeviceIds[ID];
-				}
-
-				temp->m_DeviceGUI->SetID(ID);
-				m_DeviceWinMap[ID]=temp;
-				((Fl_CommentGUI*)(m_DeviceWinMap[ID]->m_DeviceGUI))->StreamIn(s); // load the Module
-
-				if (paste || merge)
-					Fl_Canvas::AppendSelection(ID, m_Canvas);
-				else
-					if (m_NextID<=ID) m_NextID=ID+1;
-
-			}
-		}
-		else
-		{
-			DeviceWin* temp = NewDeviceWin(ModuleID, x, y);
+			DeviceWin* temp = NewDevice(ModuleID, x, y);
 			if (temp)
 			{
 				int oldID=ID;
@@ -523,14 +445,7 @@ iostream &SynthModular::StreamPatchIn(iostream &s, bool paste, bool merge)
 
 				if (!paste && !merge)
 					if (m_NextID<=ID) m_NextID=ID+1;
-			}
-			else
-			{
-				// can't really recover if the Module ID doesn't match a Module, as
-			    // we have no idea how much data in the stream belongs to this Module
-				m_spiralInfo->Alert("Error in stream, can't really recover data from here on.");
-				return s;
-			}
+
 		}
 	}
 
@@ -889,13 +804,9 @@ void SynthModular::cb_NewDeviceFromCanvasMenu(Fl_Canvas* o, void* v) {
 inline void SynthModular::cb_PlayPause_i (Fl_Widget *o, void *v) {
        string oldname = m_PlayPause->tooltip ();
        if (m_Info.PAUSED) {
-          m_PlayPause->label ("@||");
-          m_PlayPause->tooltip ("Pause");
           ResumeAudio();
        }
        else {
-          m_PlayPause->label ("@>");
-          m_PlayPause->tooltip ("Play");
           PauseAudio();
        }
        for (int i=0; i<m_MainMenu->size(); i++) {
@@ -925,24 +836,6 @@ void SynthModular::cb_Reset (Fl_Widget *o, void *v) {
 
 //////////////////////////////////////////////////////////
 
-inline void SynthModular::cb_NewComment_i(Fl_Button* o, void* v)
-{
-	AddComment(-1);
-}
-void SynthModular::cb_NewComment(Fl_Button* o, void* v)
-{((SynthModular*)(o->parent()->user_data()))->cb_NewComment_i(o,v);}
-
-//////////////////////////////////////////////////////////
-
-inline void SynthModular::cb_GroupTab_i(Fl_Tabs* o, void* v)
-{
-        m_GroupTab->redraw();
-}
-
-void SynthModular::cb_GroupTab(Fl_Tabs* o, void* v)
-{((SynthModular*)(o->parent()->user_data()))->cb_GroupTab_i(o,v);}
-
-//////////////////////////////////////////////////////////
 
 inline void SynthModular::cb_Connection_i(Fl_Canvas* o, void* v)
 {
@@ -1020,8 +913,6 @@ void SynthModular::cb_UpdateModuleInfo(int ID, void *PInfo)
 	{
 		DeviceGUIInfo Info=BuildDeviceGUIInfo(*((ModuleInfo*)PInfo));
 
-		(*i).second->m_DeviceGUI->Setup(Info);
-		(*i).second->m_DeviceGUI->redraw();
 	}
 }
 
@@ -1043,8 +934,20 @@ void SynthModular::LoadPatch(const char *fn)
 
 		inf.close();
 
-		TITLEBAR=LABEL+" "+fn;
-		m_TopWindow->label(TITLEBAR.c_str());
 	}
 }
 
+void SynthModular::addModule(SpiralModule* module)
+{
+    module->SetBlockingCallback(cb_Blocking);
+    module->SetUpdateCallback(cb_Update);
+    module->SetParent((void*)this);
+    module->SetUpdateInfoCallback(cb_UpdatePluginInfo);
+    if (module->IsAudioDriver()) {
+        AudioDriver *driver = ((AudioDriver*)module);
+    	driver->SetChangeBufferAndSampleRateCallback(
+            cb_ChangeBufferAndSampleRate
+        );
+    }
+    ModuleInfo PInfo = module->Initialise(&m_Info);
+}

@@ -20,9 +20,9 @@
 #define SPIRALSOUNDDEMO
 
 #include <stdio.h>
-#include "../SpiralSound/SpiralInfo.h"
-#include "../SpiralSound/Modules/SpiralModule.h"
-#include "../SpiralSound/ChannelHandler.h"
+#include "SpiralInfo.h"
+#include "Modules/SpiralModule.h"
+#include "ChannelHandler.h"
 
 class SynthModular
 {
@@ -30,14 +30,15 @@ class SynthModular
 	    SynthModular(SpiralInfo *info);
 	    ~SynthModular();
 	    void Update();
+        void addModule(SpiralModule* module);
 	    void AddDevice(int n, int x, int y);
         void ClearUp();
         void UpdateHostInfo();
         bool CallbackMode() {
             return m_CallbackUpdateMode;
         }
-        bool IsBlockingOutputPluginReady() {
-            return m_BlockingOutputPluginIsReady;
+        bool IsBlockingOutputModuleReady() {
+            return m_BlockingOutputModuleIsReady;
         }
         void LoadPatch(const char *fn);
         void FreezeAll() {
@@ -66,11 +67,8 @@ class SynthModular
         SpiralInfo *m_spiralInfo;
         HostInfo m_Info;
 	    bool m_ResetingAudioThread, m_HostNeedsUpdate, m_Frozen;
-	    // currently static, to allow the callback
-	    // cb_UpdatePluginInfo to access the map.
-        int m_NextID;
         static bool m_CallbackUpdateMode;
-        static bool m_BlockingOutputPluginIsReady;
+        static bool m_BlockingOutputModuleIsReady;
         // Main GUI stuff
         ChannelHandler m_CH; // used for threadsafe communication
         inline void cb_ChangeBufferAndSampleRate_i(long int NewBufferSize, long int NewSamplerate);
