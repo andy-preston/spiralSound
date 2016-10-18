@@ -1,5 +1,8 @@
-/*  SpiralSound
- *  Copyleft (C) 2001 David Griffiths <dave@pawfal.org>
+/*
+ * SpiralSound oscillator module
+ *     - Copyleft (C) 2016 Andy Preston <edgeeffect@gmail.com>
+ * based on SpiralSynthModular
+ *     - Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,68 +19,53 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "../SpiralPlugin.h"
-#include <FL/Fl_Pixmap.H>
+#include "../SpiralModule.h"
 
-#ifndef OscillatorPLUGIN
-#define OscillatorPLUGIN
+#ifndef OSCILLATOR_MODULE
+#define OSCILLATOR_MODULE
 
-class OscillatorPlugin : public SpiralPlugin
+class OscillatorModule : public SpiralModule
 {
-public:
- 	OscillatorPlugin();
-	virtual ~OscillatorPlugin();
-
-	virtual PluginInfo &Initialise(const HostInfo *Host);
-	virtual SpiralGUIType  *CreateGUI();
-	virtual void 		Execute();
-	virtual void		Reset();
-
-	virtual void	    StreamOut(std::ostream &s);
-	virtual void	    StreamIn(std::istream &s);
-
-	typedef char Type;
-	enum {NONE,SQUARE,SAW,NOISE};
-
-	void ModulateFreq(Sample *data) {m_FreqModBuf=data;}
-	void ModulatePulseWidth(Sample *data) {m_PulseWidthModBuf=data;}
-	void ModulateSHLen(Sample *data) {m_SHModBuf=data;}
-
-	void NoteTrigger(int V,int s,int v);
-	int   GetOctave() {return m_Octave;}
-	float GetFineFreq() {return m_FineFreq;}
-	float GetPulseWidth() {return m_PulseWidth;}
-	Type  GetType() {return m_Type;}
-	float GetSHLen() {return m_SHLen;}
-	float GetModAmount() {return m_ModAmount;}
-
-private:
-
-	// Voice specific parameter
-	int   m_Note;
-	int   m_CyclePos;
-	float m_LastFreq;
-
+    public:
+        OscillatorModule();
+        virtual ~OscillatorModule();
+        virtual ModuleInfo &Initialise(const HostInfo *Host);
+        virtual void Execute();
+        virtual void Reset();
+        virtual char *StreamOut();
+        virtual void StreamIn(char *data);
+        typedef char Type;
+        enum { NONE, SQUARE, SAW, NOISE };
+        void ModulateFreq(Sample *data)
+        {
+            m_FreqModBuf = data;
+        }
+        void ModulatePulseWidth(Sample *data)
+        {
+            m_PulseWidthModBuf = data;
+        }
+        void ModulateSHLen(Sample *data)
+        {
+            m_SHModBuf = data;
+        }
+        void NoteTrigger(int V, int s, int v);
+        int m_Octave;
+        float m_FineFreq;
+        float m_PulseWidth;
+        Type m_Type;
+        float m_SHLen;
+        float m_ModAmount;
+    private:
+        // Voice specific parameter
+        int m_Note;
+        int m_CyclePos;
+        float m_LastFreq;
         // Common voice parameters
-	Type   m_Type;
-	int    m_Octave;
-	float  m_FineFreq;
-	float  m_PulseWidth;
-	float  m_SHLen;
-	float  m_ModAmount;
-	short  m_Noisev;
-
-	Sample *m_FreqModBuf;
-	Sample *m_PulseWidthModBuf;
-	Sample *m_SHModBuf;
-
-	static const int FIXED;
-
-	friend std::istream &operator>>(std::istream &s, OscillatorPlugin &o);
-	friend std::ostream &operator<<(std::ostream &s, OscillatorPlugin &o);
+        short m_Noisev;
+        Sample *m_FreqModBuf;
+        Sample *m_PulseWidthModBuf;
+        Sample *m_SHModBuf;
+        static const int FIXED;
 };
-
-std::istream &operator>>(std::istream &s, OscillatorPlugin &o);
-std::ostream &operator<<(std::ostream &s, OscillatorPlugin &o);
 
 #endif
