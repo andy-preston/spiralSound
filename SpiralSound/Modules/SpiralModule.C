@@ -14,7 +14,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/ 
+ */
 
 #include "SpiralPlugin.h"
 
@@ -23,9 +23,6 @@ using namespace std;
 SpiralPlugin::SpiralPlugin()
 {
 	m_Version=1;
-	m_PluginInfo.Name="BasePlugin";
-	m_PluginInfo.Width=100;
-	m_PluginInfo.Height=100;
 	m_PluginInfo.NumInputs=0;
 	m_PluginInfo.NumOutputs=0;
 	UpdateInfo=NULL;
@@ -39,18 +36,18 @@ SpiralPlugin::SpiralPlugin()
 
 SpiralPlugin::~SpiralPlugin()
 {
-	RemoveAllOutputs();	
-	RemoveAllInputs();	
+	RemoveAllOutputs();
+	RemoveAllInputs();
 	delete m_AudioCH;
 }
 
-bool SpiralPlugin::Kill() 
+bool SpiralPlugin::Kill()
 {
-	m_IsDead = true; 
+	m_IsDead = true;
 	return true;
 }
 
-void SpiralPlugin::ResetPorts() 
+void SpiralPlugin::ResetPorts()
 {
 	for (int n=0; n<m_PluginInfo.NumOutputs; n++)
 	{
@@ -59,30 +56,23 @@ void SpiralPlugin::ResetPorts()
 	}
 }
 
-void SpiralPlugin::Reset() 
+void SpiralPlugin::Reset()
 {
 	ResetPorts();
 }
 
 PluginInfo &SpiralPlugin::Initialise(const HostInfo *Host)
-{	
-	m_HostInfo=Host;
-
-        for (int n=0; n<m_PluginInfo.NumInputs; n++)
-	{
-		m_Input.push_back(NULL);
-	}
-
-	for (int n=0; n<m_PluginInfo.NumOutputs; n++)
-	{
+{
+	m_HostInfo = Host;
+    for (int n=0; n<m_PluginInfo.NumInputs; n++) {
+        m_Input.push_back(NULL);
+    }
+	for (int n=0; n<m_PluginInfo.NumOutputs; n++) {
 		m_Output.push_back(new Sample(Host->BUFSIZE));
 	}
-
-	for (int n=0; n<m_PluginInfo.NumInputs+m_PluginInfo.NumOutputs; n++)
- 	{
+	for (int n=0; n<m_PluginInfo.NumInputs+m_PluginInfo.NumOutputs; n++) {
  		m_PluginInfo.PortTypes.push_back(0);
  	}
-
 	return m_PluginInfo;
 }
 

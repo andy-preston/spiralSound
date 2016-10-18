@@ -14,10 +14,10 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/
+ */
 
-#ifndef SPIRALMODULE
-#define SPIRALMODULE
+#ifndef SPIRAL_MODULE
+#define SPIRAL_MODULE
 
 #include <vector>
 #include <map>
@@ -113,6 +113,7 @@ class SpiralModule {
         {
             return false;
         }
+        ModuleInfo m_ModuleInfo;
     protected:
         ChannelHandler *m_AudioCH;
         void SetOutput(int n, int p, float s)
@@ -165,7 +166,6 @@ class SpiralModule {
             return m_Output[n];
         }
         const HostInfo *m_HostInfo;
-        ModuleInfo m_ModuleInfo;
         int m_Version;
         // needed for jack
         void (*cb_Update)(void*o ,bool m);
