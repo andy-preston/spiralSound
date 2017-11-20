@@ -25,14 +25,13 @@
 using namespace std;
 
 static const int IN_FREQ  = 0;
-static const int IN_PW    = 1;
+static const int IN_PW = 1;
 static const int IN_SHLEN = 2;
 
 static const int OUT_MAIN = 0;
 
 OscillatorModule::OscillatorModule()
 {
-
     m_Type = SQUARE;
     m_Octave = 0;
     m_FineFreq = 1.0f;
@@ -48,13 +47,16 @@ OscillatorModule::OscillatorModule()
 	m_Note = 0;
 	m_LastFreq = 0;
 
-	m_ModuleInfo.Name="Oscillator";
 	m_ModuleInfo.NumInputs = 3;
 	m_ModuleInfo.NumOutputs = 1;
-	m_ModuleInfo.PortTips.push_back("Frequency CV");
-	m_ModuleInfo.PortTips.push_back("PulseWidth CV");
-	m_ModuleInfo.PortTips.push_back("Sample & Hold length CV");
-	m_ModuleInfo.PortTips.push_back("Output");
+
+    /*
+     * ports:
+     * 1: Frequency CV
+     * 2: PulseWidth CV
+     * 3: Sample & Hold length CV
+     * 4: Output
+     */
 
 	m_AudioCH->Register("Octave", &m_Octave);
 	m_AudioCH->Register("FineFreq", &m_FineFreq);
@@ -154,27 +156,4 @@ void OscillatorModule::Execute()
         case NONE:
             break;
     }
-}
-
-void OscillatorModule::StreamOut(ostream &s)
-{
-	s <<
-        m_Version << " " <<
-        (int)o.m_Type << " " <<
-        o.m_Octave << " " <<
-        o.m_FineFreq << " " <<
-        o.m_PulseWidth << " " <<
-        o.m_SHLen << " " << o.m_ModAmount;
-}
-
-void OscillatorModule::StreamIn(istream &s)
-{
-	int version;
-	s >> version;
-    s >> (int&)o.m_Type >>
-        o.m_Octave >>
-        o.m_FineFreq >>
-        o.m_PulseWidth >>
-        o.m_SHLen >>
-        o.m_ModAmount;
 }
