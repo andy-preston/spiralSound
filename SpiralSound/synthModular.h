@@ -1,5 +1,5 @@
-/*  SpiralSynthModular
- *  Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
+/*  SpiralSound (c) Copyleft 2017 Andy Preston <edgeeffect@gmail.com>
+ *  based on SpiralSynthModular Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,13 @@
 #include "SpiralInfo.h"
 #include "Modules/SpiralModule.h"
 #include "ChannelHandler.h"
+
+class DeviceNode // Formerly DeviceWin
+{
+    // All the GUI related stuff has, obviously, gone.
+    int pluginId; // Formerly m_PluginID;
+    SpiralPlugin* device; // Formerly m_Device;
+};
 
 class SynthModular
 {
