@@ -16,86 +16,33 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef SPIRALSOUNDDEMO
-#define SPIRALSOUNDDEMO
+#ifndef SPIRALSOUND
+#define SPIRALSOUND
 
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/time.h>
 #include "SpiralInfo.h"
 #include "Modules/SpiralModule.h"
-#include "ChannelHandler.h"
-
-class DeviceNode // Formerly DeviceWin
-{
-    public:
-        // All the GUI related stuff has, obviously, gone.
-        int moduleId; // Formerly m_PluginID;
-        SpiralModule* device; // Formerly m_Device;
-};
 
 class SynthModular
 {
     public:
 	    SynthModular(SpiralInfo *info);
 	    ~SynthModular();
-	    void Update();
         void addModule(SpiralModule* module);
-	    void AddDevice(int n, int x, int y);
-        void ClearUp();
+        void run();
+        // TODO: rename this to updateModulesNow
+        void UpdateDataNow();
         void UpdateHostInfo();
-        bool CallbackMode() {
-            return m_CallbackUpdateMode;
-        }
         bool IsBlockingOutputModuleReady() {
             return m_BlockingOutputModuleIsReady;
         }
-        void LoadPatch(const char *fn);
-        void FreezeAll() {
-            m_CH.Set("Frozen", true);
-            m_CH.Wait();
-        }
-        void ThawAll() {
-            m_CH.Set("Frozen", false);
-        }
-        void PauseAudio() {
-            m_Info.PAUSED = true;
-        }
-        void ResumeAudio() {
-            m_Info.PAUSED = false;
-        }
-        void ResetAudio() {
-            if (! m_ResetingAudioThread) {
-                FreezeAll();
-                m_ResetingAudioThread = true;
-                ThawAll();
-		    }
-	    }
-        // only for audio thread
-        bool IsFrozen() { return m_Frozen; }
     private:
-        SpiralInfo *m_spiralInfo;
-        HostInfo m_Info;
-	    bool m_ResetingAudioThread, m_HostNeedsUpdate, m_Frozen;
-
-        // currently static, to allow the callback
-        // cb_UpdatePluginInfo to access the map.
-        static map<int,DeviceNode*> deviceNodeMap;
-
-        static bool m_CallbackUpdateMode;
+        SpiralInfo *spiralInfo;
+        map<int,SpiralModule*> deviceMap;
         static bool m_BlockingOutputModuleIsReady;
-        // Main GUI stuff
-        ChannelHandler m_CH; // used for threadsafe communication
-        inline void cb_ChangeBufferAndSampleRate_i(
-            long int NewBufferSize, long int NewSamplerate);
-
-        static void cb_ChangeBufferAndSampleRate(
-            long unsigned int NewBufferSize, long unsigned int NewSamplerate,
-            void *o)
-        {
-            // TODO: Why is this cast from void, why not pass it
-            // as the correct type
-		    ((SynthModular*)o)->cb_ChangeBufferAndSampleRate_i(
-                NewBufferSize, NewSamplerate);
-        }
+        void Update();
 };
 
 #endif
