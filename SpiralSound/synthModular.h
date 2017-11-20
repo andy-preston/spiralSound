@@ -26,9 +26,10 @@
 
 class DeviceNode // Formerly DeviceWin
 {
-    // All the GUI related stuff has, obviously, gone.
-    int pluginId; // Formerly m_PluginID;
-    SpiralPlugin* device; // Formerly m_Device;
+    public:
+        // All the GUI related stuff has, obviously, gone.
+        int moduleId; // Formerly m_PluginID;
+        SpiralModule* device; // Formerly m_Device;
 };
 
 class SynthModular
@@ -74,14 +75,26 @@ class SynthModular
         SpiralInfo *m_spiralInfo;
         HostInfo m_Info;
 	    bool m_ResetingAudioThread, m_HostNeedsUpdate, m_Frozen;
+
+        // currently static, to allow the callback
+        // cb_UpdatePluginInfo to access the map.
+        static map<int,DeviceNode*> deviceNodeMap;
+
         static bool m_CallbackUpdateMode;
         static bool m_BlockingOutputModuleIsReady;
         // Main GUI stuff
         ChannelHandler m_CH; // used for threadsafe communication
-        inline void cb_ChangeBufferAndSampleRate_i(long int NewBufferSize, long int NewSamplerate);
-        static void cb_ChangeBufferAndSampleRate(long unsigned int NewBufferSize, long unsigned int NewSamplerate, void *o)
+        inline void cb_ChangeBufferAndSampleRate_i(
+            long int NewBufferSize, long int NewSamplerate);
+
+        static void cb_ChangeBufferAndSampleRate(
+            long unsigned int NewBufferSize, long unsigned int NewSamplerate,
+            void *o)
         {
-		    ((SynthModular*)o)->cb_ChangeBufferAndSampleRate_i(NewBufferSize, NewSamplerate);
+            // TODO: Why is this cast from void, why not pass it
+            // as the correct type
+		    ((SynthModular*)o)->cb_ChangeBufferAndSampleRate_i(
+                NewBufferSize, NewSamplerate);
         }
 };
 

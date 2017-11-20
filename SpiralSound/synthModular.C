@@ -68,53 +68,36 @@ void SynthModular::Update()
 
 	if (m_Frozen) return;
 
-    // DeviceWinMap was a map of plugin GUI's and their plugins
-    // it's gone now - but we are going to need something else to
-    // do a simillar job, I think
-    // (or are we? it's all about how control signals come from outside into the modules)
-
-	// for all the Modules
-	for(map<int,DeviceNode*>::iterator i=m_DeviceNodeMap.begin();
-		i!=m_DeviceNodeMap.end(); i++)
+	for(map<int,DeviceNode*>::iterator i=deviceNodeMap.begin();
+		i!=deviceNodeMap.end(); i++)
 	{
-		if (i->second->m_Device && i->second->m_Device->IsDead())
+		#ifdef DEBUG_MODULES
+		cerr << "Updating channelhandler of Module "
+            << i->second->moduleID << endl;
+		#endif
+
+		// updates the data from the gui thread, if it's not blocking
+			i->second->device->UpdateChannelHandler();
+
+		#ifdef DEBUG_MODULES
+		cerr << "Finished updating" << endl;
+		#endif
+
+		// If this is an audio device see if we always need to ProcessAudio here
+		if ((!m_ResetingAudioThread))
 		{
-			//Delete Device
-			delete i->second->m_Device;
-			i->second->m_Device=NULL;
-
-			//Erase Device from DeviceNodeMap
-			m_DeviceNodeMap.erase(i);
-		}
-		else if (i->second->m_Device) // if it's not a comment
-		{
-			#ifdef DEBUG_MODULES
-			cerr<<"Updating channelhandler of Module "<<i->second->m_ModuleID<<endl;
-			#endif
-
-			// updates the data from the gui thread, if it's not blocking
- 			i->second->m_Device->UpdateChannelHandler();
-
-			#ifdef DEBUG_MODULES
-			cerr<<"Finished updating"<<endl;
-			#endif
-
-			// If this is an audio device see if we always need to ProcessAudio here
-			if ((!m_ResetingAudioThread))
+			if (i->second->device->IsAudioDriver())
 			{
-				if (i->second->m_Device->IsAudioDriver())
+				AudioDriver *driver = ((AudioDriver *)i->second->device);
+
+				if (driver->ProcessType() == AudioDriver::ALWAYS)
 				{
-					AudioDriver *driver = ((AudioDriver *)i->second->m_Device);
-
-					if (driver->ProcessType() == AudioDriver::ALWAYS)
-					{
-						driver->ProcessAudio();
-					}
+					driver->ProcessAudio();
 				}
-
-				// run any commands we've received from the GUI's
-				i->second->m_Device->ExecuteCommands();
 			}
+
+			// run any commands we've received from the GUI's
+			i->second->device->ExecuteCommands();
 		}
 	}
 
@@ -124,8 +107,8 @@ void SynthModular::Update()
 		 i!=ExecutionOrder.rend(); i++)
 	{
 		// use the graphsort order to remove internal latency
-		map<int,DeviceNode*>::iterator di=m_DeviceNodeMap.find(*i);
-		if (di!=m_DeviceNodeMap.end() && di->second->m_Device  && (! di->second->m_Device->IsDead()) && (!m_Info.PAUSED || m_ResetingAudioThread))
+		map<int,DeviceNode*>::iterator di=deviceNodeMap.find(*i);
+		if (di!=deviceNodeMap.end() && di->second->m_Device  && (! di->second->m_Device->IsDead()) && (!m_Info.PAUSED || m_ResetingAudioThread))
 		{
 			#ifdef DEBUG_MODULES
 			cerr<<"Executing Module "<<di->second->m_ModuleID<<endl;
@@ -379,7 +362,7 @@ iostream &SynthModular::StreamPatchIn(iostream &s, bool paste, bool merge)
 		if (!paste && !merge)
 		{
 			// Check we're not duplicating an ID
-			if (m_DeviceNodeMap.find(ID)!=m_DeviceNodeMap.end())
+			if (deviceNodeMap.find(ID)!=deviceNodeMap.end())
 			{
 				m_spiralInfo->Alert("Duplicate device ID found in file - aborting load");
 				ThawAll();
@@ -407,37 +390,37 @@ iostream &SynthModular::StreamPatchIn(iostream &s, bool paste, bool merge)
 				}
 
 				temp->m_Device->SetUpdateInfoCallback(ID,cb_UpdateModuleInfo);
-				m_DeviceNodeMap[ID]=temp;
-				m_DeviceNodeMap[ID]->m_Device->StreamIn(s); // load the Module
+				deviceNodeMap[ID]=temp;
+				deviceNodeMap[ID]->m_Device->StreamIn(s); // load the Module
 
 				// load external files
 				if (paste || merge)
-					m_DeviceNodeMap[ID]->m_Device->LoadExternalFiles(m_FromFilePath+"_files/", oldID);
+					deviceNodeMap[ID]->m_Device->LoadExternalFiles(m_FromFilePath+"_files/", oldID);
 				else
-					m_DeviceNodeMap[ID]->m_Device->LoadExternalFiles(m_FilePath+"_files/");
+					deviceNodeMap[ID]->m_Device->LoadExternalFiles(m_FilePath+"_files/");
 
-				if ((paste || ver>1) && m_DeviceNodeMap[ID]->m_DeviceGUI->GetModuleWindow())
+				if ((paste || ver>1) && deviceNodeMap[ID]->m_DeviceGUI->GetModuleWindow())
 				{
 					// set the GUI up with the loaded values
 					// looks messy, but if we do it here, the Module and it's gui can remain
 					// totally seperated.
-					((SpiralModuleGUI*)(m_DeviceNodeMap[ID]->m_DeviceGUI->GetModuleWindow()))->
-						UpdateValues(m_DeviceNodeMap[ID]->m_Device);
+					((SpiralModuleGUI*)(deviceNodeMap[ID]->m_DeviceGUI->GetModuleWindow()))->
+						UpdateValues(deviceNodeMap[ID]->m_Device);
 
 					// updates the data in the channel buffers, so the values don't
 					// get overwritten in the next tick. (should maybe be somewhere else)
-					m_DeviceNodeMap[ID]->m_Device->GetChannelHandler()->FlushChannels();
+					deviceNodeMap[ID]->m_Device->GetChannelHandler()->FlushChannels();
 
 					// position the Module window in the main window
-					//m_DeviceNodeMap[ID]->m_DeviceGUI->GetModuleWindow()->position(px,py);
+					//deviceNodeMap[ID]->m_DeviceGUI->GetModuleWindow()->position(px,py);
 
 					if (ps)
 					{
-						m_DeviceNodeMap[ID]->m_DeviceGUI->Maximise();
+						deviceNodeMap[ID]->m_DeviceGUI->Maximise();
 						// reposition after maximise
-						m_DeviceNodeMap[ID]->m_DeviceGUI->position(x,y);
+						deviceNodeMap[ID]->m_DeviceGUI->position(x,y);
 					}
-					else m_DeviceNodeMap[ID]->m_DeviceGUI->Minimise();
+					else deviceNodeMap[ID]->m_DeviceGUI->Minimise();
 
 					if (paste || merge)
 						Fl_Canvas::AppendSelection(ID, m_Canvas);
@@ -487,10 +470,10 @@ ostream &operator<<(ostream &s, SynthModular &o)
 
 	// save out the SynthModular
 	s<<"SectionList"<<endl;
-	s<<o.m_DeviceNodeMap.size()<<endl;
+	s<<o.deviceNodeMap.size()<<endl;
 
-	for(map<int,DeviceNode*>::iterator i=o.m_DeviceNodeMap.begin();
-		i!=o.m_DeviceNodeMap.end(); i++)
+	for(map<int,DeviceNode*>::iterator i=o.deviceNodeMap.begin();
+		i!=o.deviceNodeMap.end(); i++)
 	{
 		if (i->second->m_DeviceGUI && ((i->second->m_Device) || (i->second->m_ModuleID==COMMENT_ID)))
 		{
@@ -563,7 +546,7 @@ ostream &operator<<(ostream &s, SynthModular &o)
 // New
 
 inline void SynthModular::cb_New_i (Fl_Widget *o, void *v) {
-       if (m_DeviceNodeMap.size()>0 && !Pawfal_YesNo ("New - Lose changes to current patch?"))
+       if (deviceNodeMap.size()>0 && !Pawfal_YesNo ("New - Lose changes to current patch?"))
           return;
        m_TopWindow->label (TITLEBAR.c_str());
        ClearUp();
@@ -576,7 +559,7 @@ void SynthModular::cb_New (Fl_Widget *o, void *v) {
 // Load
 
 inline void SynthModular::cb_Load_i (Fl_Widget *o, void *v) {
-       if (m_DeviceNodeMap.size()>0 && !Pawfal_YesNo ("Load - Lose changes to current patch?"))
+       if (deviceNodeMap.size()>0 && !Pawfal_YesNo ("Load - Lose changes to current patch?"))
           return;
        char *fn=fl_file_chooser ("Load a patch", "*.ssm", NULL);
        if (fn && fn!='\0') {
@@ -670,7 +653,7 @@ inline void SynthModular::cb_Cut_i(Fl_Widget *o, void *v) {
        cb_Copy_i (o, v);  // should we be calling an inline function here??????
        for (unsigned int i=0; i<m_Canvas->Selection().m_DeviceIds.size(); i++) {
            int ID = m_Canvas->Selection().m_DeviceIds[i];
-           Fl_DeviceGUI::Kill(m_DeviceNodeMap[ID]->m_DeviceGUI);
+           Fl_DeviceGUI::Kill(deviceNodeMap[ID]->m_DeviceGUI);
        }
        Fl_Canvas::ClearSelection(m_Canvas);
 }
@@ -692,7 +675,7 @@ inline void SynthModular::cb_Copy_i (Fl_Widget *o, void *v) {
        else m_Copied.devices << false << endl;
        for (unsigned int i=0; i<m_Canvas->Selection().m_DeviceIds.size(); i++) {
            int ID = m_Canvas->Selection().m_DeviceIds[i];
-           std::map<int,DeviceNode*>::iterator j = m_DeviceNodeMap.find(ID);
+           std::map<int,DeviceNode*>::iterator j = deviceNodeMap.find(ID);
            m_Copied.m_DeviceIds[ID] = ID;
            m_Copied.devicecount += 1;
            m_Copied.devices << "Device " << j->first << " " ; // save the id
@@ -842,8 +825,8 @@ inline void SynthModular::cb_Connection_i(Fl_Canvas* o, void* v)
 	CanvasWire *Wire;
 	Wire=(CanvasWire*)v;
 
-	map<int,DeviceNode*>::iterator si=m_DeviceNodeMap.find(Wire->OutputID);
-	if (si==m_DeviceNodeMap.end())
+	map<int,DeviceNode*>::iterator si=deviceNodeMap.find(Wire->OutputID);
+	if (si==deviceNodeMap.end())
 	{
 		char num[32];
 		sprintf(num,"%d",Wire->OutputID);
@@ -851,8 +834,8 @@ inline void SynthModular::cb_Connection_i(Fl_Canvas* o, void* v)
 		return;
 	}
 
-	map<int,DeviceNode*>::iterator di=m_DeviceNodeMap.find(Wire->InputID);
-	if (di==m_DeviceNodeMap.end())
+	map<int,DeviceNode*>::iterator di=deviceNodeMap.find(Wire->InputID);
+	if (di==deviceNodeMap.end())
 	{
 		char num[32];
 		sprintf(num,"%d",Wire->InputID);
@@ -890,8 +873,8 @@ inline void SynthModular::cb_Unconnect_i(Fl_Canvas* o, void* v)
 
 	//cerr<<Wire->InputID<<" "<<Wire->InputPort<<endl;
 
-	map<int,DeviceNode*>::iterator di=m_DeviceNodeMap.find(Wire->InputID);
-	if (di==m_DeviceNodeMap.end())
+	map<int,DeviceNode*>::iterator di=deviceNodeMap.find(Wire->InputID);
+	if (di==deviceNodeMap.end())
 	{
 		//cerr<<"Can't find destination device "<<Wire->InputID<<endl;
 		return;
@@ -908,8 +891,8 @@ void SynthModular::cb_Unconnect(Fl_Canvas* o, void* v)
 
 void SynthModular::cb_UpdateModuleInfo(int ID, void *PInfo)
 {
-	map<int,DeviceNode*>::iterator i=m_DeviceNodeMap.find(ID);
-	if (i!=m_DeviceNodeMap.end())
+	map<int,DeviceNode*>::iterator i=deviceNodeMap.find(ID);
+	if (i!=deviceNodeMap.end())
 	{
 		DeviceGUIInfo Info=BuildDeviceGUIInfo(*((ModuleInfo*)PInfo));
 
