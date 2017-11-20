@@ -17,7 +17,6 @@ LIBS	=   -lm
 
 HEADERS = \
 	../SpiralSound/synthModular.h \
-	../SpiralSound/GraphSort.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h \
 	../SpiralSound/ModuleManager.h \
@@ -27,7 +26,6 @@ HEADERS = \
 SOURCES = \
 	main.cpp \
 	../SpiralSound/synthModular.C \
-	../SpiralSound/GraphSort.C \
 	../SpiralSound/SpiralInfo.C \
 	../SpiralSound/Sample.C \
 	../SpiralSound/ModuleManager.C \
@@ -37,7 +35,6 @@ SOURCES = \
 OBJECTS = \
 	main.o \
 	../SpiralSound/synthModular.o \
-	../SpiralSound/GraphSort.o \
 	../SpiralSound/SpiralInfo.o \
 	../SpiralSound/Sample.o \
 	../SpiralSound/ModuleManager.o \
@@ -90,10 +87,6 @@ main.o : \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/ModuleManager.h \
 	../SpiralSound/Modules/SpiralModule.h
-
-GraphSort.o: \
-	GraphSort.C \
-	GraphSort.h
 
 ../SpiralSound/ChannelHandler.o: \
 	SpiralSound/ChannelHandler.C \
