@@ -11,7 +11,7 @@ CXXFLAGS=
 INCPATH	=   /usr/include/c++/4.8/
 LINK	=	g++
 LFLAGS	=
-LIBS	=   -lm -ldl -lpthread
+LIBS	=   -lm
 
 ####### Files
 

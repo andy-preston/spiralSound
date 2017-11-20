@@ -1,6 +1,6 @@
 /*
  * SpiralSound demo synth
- *     - Copyleft (C) 2016 Andy Preston <edgeeffect@gmail.com
+ *     - Copyleft (C) 2017 Andy Preston <edgeeffect@gmail.com>
  * based on SpiralSynthModular
  *     - Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
  *
@@ -25,7 +25,6 @@
 #include <sys/resource.h>
 #include "../SpiralSound/synthModular.h"
 #include "../SpiralSound/SpiralInfo.h"
-#include "../SpiralSound/Thread.h"
 #include "../SpiralSound/Modules/OscillatorModule/OscillatorModule.h"
 
 int main(int argc, char **argv)
@@ -36,13 +35,13 @@ int main(int argc, char **argv)
 
     srand(time(NULL));
     info = new SpiralInfo();
-    info->OUTPUTFILE = "/dev/dsp";
+    //info->OUTPUTFILE = "/dev/dsp";
 
 	synth = new SynthModular(info);
-    oscillator = new OscillatorModule();
+    oscillator = new OscillatorModule(info);
     synth->addModule(oscillator);
 
-    spawnAudioThread(false);
-	for (;;) sleep(1);
+    synth->run();
+
 	return 1;
 }
