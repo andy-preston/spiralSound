@@ -21,6 +21,7 @@ HEADERS = \
 	../SpiralSound/Sample.h \
 	../SpiralSound/ChannelHandler.h \
 	../SpiralSound/Modules/SpiralModule.h \
+	../SpiralSound/Modules/OscillatorModule/OscillatorModule.h \
 
 SOURCES = \
 	main.cpp \
@@ -29,6 +30,7 @@ SOURCES = \
 	../SpiralSound/Sample.C \
 	../SpiralSound/ChannelHandler.C \
 	../SpiralSound/Modules/SpiralModule.C \
+	../SpiralSound/Modules/OscillatorModule/OscillatorModule.C \
 
 OBJECTS = \
 	main.o \
@@ -37,7 +39,7 @@ OBJECTS = \
 	../SpiralSound/Sample.o \
 	../SpiralSound/ChannelHandler.o \
 	../SpiralSound/Modules/SpiralModule.o \
-	../SpiralSound/Modules/Spiralgit guiGUI.o
+	../SpiralSound/Modules/OscillatorModule/OscillatorModule.o
 
 TARGET = \
 	demosynth
@@ -63,14 +65,11 @@ TARGET = \
 
 ####### Build rules
 
-all: $(TARGET)
-
-$(TARGET): $(OBJECTS)
-	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS)
+demosynth: $(OBJECTS)
+	$(LINK) $(LFLAGS) -o demosynth $(OBJECTS) $(LIBS)
 
 clean:
-	-rm -f $(OBJECTS) $(TARGET)
-	-rm -f *~ core
+	-rm -f $(OBJECTS) demosynth *~ core
 
 ####### Compile
 
@@ -98,10 +97,14 @@ main.o : \
 	../SpiralSound/Sample.h \
 	../SpiralSound/SpiralInfo.h
 
-SpiralSound/Modules/SpiralModule.o: \
+../SpiralSound/Modules/SpiralModule.o: \
 	../SpiralSound/Modules/SpiralModule.C \
 	../SpiralSound/Modules/SpiralModule.h \
-	../SpiralSound/Sample.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h
 
+../SpiralSound/Modules/OscillatorModule/OscillatorModule.o: \
+	../SpiralSound/Modules/OscillatorModule/OscillatorModule.C \
+	../SpiralSound/Modules/OscillatorModule/OscillatorModule.h \
+	../SpiralSound/SpiralInfo.h \
+	../SpiralSound/Sample.h
