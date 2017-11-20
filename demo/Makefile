@@ -19,7 +19,6 @@ HEADERS = \
 	../SpiralSound/synthModular.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h \
-	../SpiralSound/ModuleManager.h \
 	../SpiralSound/ChannelHandler.h \
 	../SpiralSound/Modules/SpiralModule.h \
 
@@ -28,7 +27,6 @@ SOURCES = \
 	../SpiralSound/synthModular.C \
 	../SpiralSound/SpiralInfo.C \
 	../SpiralSound/Sample.C \
-	../SpiralSound/ModuleManager.C \
 	../SpiralSound/ChannelHandler.C \
 	../SpiralSound/Modules/SpiralModule.C \
 
@@ -37,7 +35,6 @@ OBJECTS = \
 	../SpiralSound/synthModular.o \
 	../SpiralSound/SpiralInfo.o \
 	../SpiralSound/Sample.o \
-	../SpiralSound/ModuleManager.o \
 	../SpiralSound/ChannelHandler.o \
 	../SpiralSound/Modules/SpiralModule.o \
 	../SpiralSound/Modules/Spiralgit guiGUI.o
@@ -85,7 +82,6 @@ main.o : \
 	../SpiralSound/synthModular.C \
 	../SpiralSound/synthModular.h \
 	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/ModuleManager.h \
 	../SpiralSound/Modules/SpiralModule.h
 
 ../SpiralSound/ChannelHandler.o: \
@@ -109,10 +105,3 @@ SpiralSound/Modules/SpiralModule.o: \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h
 
-../SpiralSound/ModuleManager.o: \
-	../SpiralSound/ModuleManager.C \
-	../SpiralSound/ModuleManager.h \
-	../SpiralSound/Sample.h \
-	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/Sample.h \
-	../SpiralSound/Modules/SpiralModule.h
