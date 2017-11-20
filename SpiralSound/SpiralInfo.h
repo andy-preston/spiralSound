@@ -31,20 +31,19 @@ float RandFloat (float s = 0.0f, float e = 1.0f);
 // Loads info from the resource file
 
 class SpiralInfo {
-   public:
-      SpiralInfo();
-      ~SpiralInfo() {}
-      int BUFSIZE;
-      int FRAGSIZE;
-      int FRAGCOUNT;
-      int SAMPLERATE;
-      long MAXSAMPLE;
-      float VALUECONV;
-      bool WANTMIDI;
-      int FILTERGRAN;
-      char *OUTPUTFILE;
-      char *MIDIFILE;
-      int POLY;
+    public:
+        SpiralInfo();
+        ~SpiralInfo() {}
+        int BUFSIZE;
+        int FRAGSIZE;
+        int FRAGCOUNT;
+        int SAMPLERATE;
+        long MAXSAMPLE;
+        float VALUECONV;
+        int FILTERGRAN;
+        static SpiralInfo* Get();
+    private:
+        static SpiralInfo *m_SpiralInfo;
 };
 
 #endif

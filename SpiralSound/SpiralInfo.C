@@ -27,8 +27,6 @@ float RandFloat (float s, float e) {
       return s + ((rand() % 10000 / 10000.0) * (e - s));
 }
 
-vector<string> SpiralInfo::PLUGINVEC;
-
 SpiralInfo* SpiralInfo::m_SpiralInfo = NULL;
 
 SpiralInfo* SpiralInfo::Get() {
@@ -41,14 +39,13 @@ SpiralInfo* SpiralInfo::Get() {
 SpiralInfo::SpiralInfo()
 {
     BUFSIZE = 512;
+
+    /* obsolete - REMOVE SOON  */
     FRAGSIZE = 256;
     FRAGCOUNT = 8;
+
     SAMPLERATE = 44100;
     MAXSAMPLE = 32767;
     VALUECONV = 1.0f / MAXSAMPLE;
-    WANTMIDI = false;
     FILTERGRAN = 50;
-    OUTPUTFILE = "/dev/dsp";
-    MIDIFILE = "/dev/midi";
-    POLY = 1;
 }

@@ -25,158 +25,182 @@
 #include <iostream>
 #include <math.h>
 #include <stdlib.h>
+#include "../SpiralInfo.h"
 #include "../Sample.h"
-#include "../ChannelHandler.h"
 
 static const float MAX_FREQ = 13000;
 
-struct ModuleInfo
+class InputPort
 {
-	int NumInputs;
-	int NumOutputs;
-	std::vector<int> PortTypes;
-	char BitMap[40][40][3];
+    public:
+        InputPort(const char* Name, Sample::SampleType Type, const Sample* Data);
+        const Sample* Data;
+    private:
+        const char* Name;
+        Sample::SampleType Type;
 };
 
-struct HostInfo
-{
-	int BUFSIZE;
-	int SAMPLERATE;
-	bool PAUSED;
+class OutputPort {
+    public:
+        OutputPort(const char* Name, Sample::SampleType Type, Sample* Data);
+        Sample* Data;
+    private:
+        const char* Name;
+        Sample::SampleType Type;
 };
 
-/////////////////////////////////////////////////////////////////////
-
-class ChannelHandler;
+struct ModuleControl
+{
+    char* name;
+};
 
 class SpiralModule {
     public:
-	    SpiralModule();
+	    SpiralModule(const SpiralInfo *info);
+
 	    virtual ~SpiralModule();
-        virtual ModuleInfo& Initialise(const HostInfo *Host);
+
         // execute the audio
 	    virtual void Execute() = 0;
-        virtual bool Kill();
-        virtual void Reset();
-        // run the commands from the GUI
+
+        // run the commands from the Control panel
         virtual void ExecuteCommands()
         {
         }
-        // stream the Modules state
-        virtual char *StreamOut() = 0;
-        virtual void StreamIn(char *data) = 0;
+
         // stuff here gets saved in filename_files directory
         // you must return true if this feature is used.
         virtual bool SaveExternalFiles(const char *Dir)
         {
             return false;
         }
+
 	    virtual void LoadExternalFiles(const char *Dir, int withID=-1)
         {
         }
-        const HostInfo* GetHostInfo()
+
+        const SpiralInfo* GetInfo()
         {
-            return m_HostInfo;
+            return spiralInfo;
         }
-        bool GetOutput(unsigned int n, Sample **s);
-        bool SetInput(unsigned int n, const Sample *s);
+
+        void GetOutput(unsigned int n, Sample **s)
+        {
+        	*s = m_Output[n]->Data;
+        }
+
+        void SetInput(unsigned int n, const Sample *s)
+        {
+        	m_Input[n]->Data = s;
+        }
+
         const Sample* GetInput(unsigned int n)
         {
-            return m_Input[n];
+            return m_Input[n]->Data;
         }
-        void UpdateModuleInfoWithHost();
-        void SetInPortType(ModuleInfo &pinfo, int port, Sample::SampleType type);
-        void SetOutPortType(ModuleInfo &pinfo, int port, Sample::SampleType type);
-        // Callbacks to main engine. Should only called by Module hosts.
-        void SetUpdateInfoCallback(int ID, void(*s)(int, void *));
+
         void SetUpdateCallback(void (*s)(void*,bool m))
         {
             cb_Update = s;
         }
+
         void SetBlockingCallback(void (*s)(void*,bool m))
         {
             cb_Blocking = s;
         }
-	    void SetParent(void *s)
+
+        void SetParent(void *s)
         {
             m_Parent = s;
         }
-        void UpdateChannelHandler();
+
         // is the Module connected to an external device (oss/alsa/jack)
         bool m_IsTerminal;
-        bool m_IsDead;
-        ChannelHandler *GetChannelHandler()
-        {
-            return m_AudioCH;
-        }
+
         virtual bool IsAudioDriver()
         {
             return false;
         }
-        ModuleInfo m_ModuleInfo;
+
     protected:
-        ChannelHandler *m_AudioCH;
+
         void SetOutput(int n, int p, float s)
 		{
-            if (m_Output[n]) {
-                m_Output[n]->Set(p, s);
+            if (m_Output[n]->Data) {
+                m_Output[n]->Data->Set(p, s);
             }
         }
+
         float GetInput(int n, int p)
         {
-            if (m_Input[n]) {
-                return (*m_Input[n])[p];
+            if (m_Input[n]->Data) {
+                return (*m_Input[n]->Data)[p];
             }
             return 0.0;
         }
+
         void  SetOutputPitch(int n, int p, float s)
         {
-            if (m_Output[n]) {
-                m_Output[n]->Set(p, (s / MAX_FREQ *2 ) - 1.0f);
+            if (m_Output[n]->Data) {
+                m_Output[n]->Data->Set(p, (s / MAX_FREQ *2 ) - 1.0f);
             }
         }
+
         float GetInputPitch(int n, int p) {
-            if (m_Input[n]) {
-                return ((*m_Input[n])[p] + 1.0f) * MAX_FREQ / 2;
+            if (m_Input[n]->Data) {
+                return ((*m_Input[n]->Data)[p] + 1.0f) * MAX_FREQ / 2;
             }
             return 0.0;
         }
+
         void  MixOutput(int n, int p, float s)
 		{
             if (m_Output[n]) {
-                m_Output[n]->Set(p, s + (*m_Output[n])[p]);
+                m_Output[n]->Data->Set(p, s + (*m_Output[n]->Data)[p]);
             }
         }
+
         bool InputExists(int n)
         {
-            return m_Input[n] != NULL;
+            return m_Input[n]->Data != NULL;
         }
+
         bool OutputExists(int n) {
-            return m_Output[n] != NULL;
+            return m_Output[n]->Data != NULL;
         }
-        void AddOutput();
-        void RemoveOutput();
-        void RemoveAllOutputs();
-        void AddInput();
-        void RemoveInput();
-        void RemoveAllInputs();
-        void ResetPorts();
+
+        void addOutput(const char* name, Sample::SampleType type);
+
+        void addInput(const char* name, Sample::SampleType type);
+
+        void addIntControl(const char* name, int* data);
+
+        void addFloatControl(const char* name, float* data);
+
         Sample* GetOutputBuf(int n)
         {
-            return m_Output[n];
+            return m_Output[n]->Data;
         }
-        const HostInfo *m_HostInfo;
-        int m_Version;
+
+        const SpiralInfo *spiralInfo;
+
         // needed for jack
         void (*cb_Update)(void*o ,bool m);
+
         void *m_Parent;
+
         // tell the engine that we are taking control of the
         // timing for output.
         void (*cb_Blocking)(void*o, bool m);
+
     private:
-        std::vector<const Sample*> m_Input;
-        std::vector<Sample*> m_Output;
+
+        std::vector<InputPort*> m_Input;
+
+        std::vector<OutputPort*> m_Output;
+
         void (*UpdateInfo)(int n,void *);
+
         int m_HostID;
 };
 

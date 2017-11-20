@@ -1,5 +1,5 @@
-/*  SpiralSound
- *  Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
+/*  SpiralSound Copyleft (C) 2017 Andy Preston <edgeeffect@gmail.com>
+ *  Based on SpiralSynthModular Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,148 +16,65 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "SpiralPlugin.h"
+#include <sstream>
+#include "SpiralModule.h"
 
 using namespace std;
 
-SpiralPlugin::SpiralPlugin()
+InputPort::InputPort(const char* name, Sample::SampleType type, const Sample* data)
 {
-	m_Version=1;
-	m_PluginInfo.NumInputs=0;
-	m_PluginInfo.NumOutputs=0;
-	UpdateInfo=NULL;
-	cb_Update=NULL;
-	m_Parent=NULL;
-	m_HostID=-1;
-	m_IsTerminal=false;
-	m_IsDead=false;
-	m_AudioCH = new ChannelHandler;
+    Name = name;
+    Type = type;
+    Data = data;
 }
 
-SpiralPlugin::~SpiralPlugin()
+OutputPort::OutputPort(const char* name, Sample::SampleType type, Sample* data)
 {
-	RemoveAllOutputs();
-	RemoveAllInputs();
-	delete m_AudioCH;
+    Name = name;
+    Type = type;
+    Data = data;
 }
 
-bool SpiralPlugin::Kill()
+SpiralModule::SpiralModule(const SpiralInfo *info)
 {
-	m_IsDead = true;
-	return true;
+	UpdateInfo = NULL;
+	cb_Update = NULL;
+	m_Parent = NULL;
+	m_HostID = -1;
+	m_IsTerminal = false;
+    spiralInfo = info;
 }
 
-void SpiralPlugin::ResetPorts()
+SpiralModule::~SpiralModule()
 {
-	for (int n=0; n<m_PluginInfo.NumOutputs; n++)
-	{
-		m_Output[n]->Clear();
-		m_Output[n]->Allocate(m_HostInfo->BUFSIZE);
-	}
 }
 
-void SpiralPlugin::Reset()
-{
-	ResetPorts();
-}
-
-PluginInfo &SpiralPlugin::Initialise(const HostInfo *Host)
-{
-	m_HostInfo = Host;
-    for (int n=0; n<m_PluginInfo.NumInputs; n++) {
-        m_Input.push_back(NULL);
-    }
-	for (int n=0; n<m_PluginInfo.NumOutputs; n++) {
-		m_Output.push_back(new Sample(Host->BUFSIZE));
-	}
-	for (int n=0; n<m_PluginInfo.NumInputs+m_PluginInfo.NumOutputs; n++) {
- 		m_PluginInfo.PortTypes.push_back(0);
- 	}
-	return m_PluginInfo;
-}
-
-bool SpiralPlugin::GetOutput(unsigned int n, Sample **s)
-{
-	if (n>=m_Output.size()) return false;
-	*s = m_Output[n];
-
-	return true;
-}
-
-bool SpiralPlugin::SetInput(unsigned int n, const Sample *s)
-{
-	if (n>=m_Input.size()) return false;
-	m_Input[n]=s;
-	return true;
-}
-
-void SpiralPlugin::UpdateChannelHandler()
+/*
+void SpiralModule::UpdateChannelHandler()
 {
     m_AudioCH->UpdateDataNow();
 }
+*/
 
-void SpiralPlugin::AddOutput()
+void SpiralModule::addOutput(const char* name, Sample::SampleType type)
 {
-	Sample* NewSample = new Sample(m_HostInfo->BUFSIZE);
-	m_Output.push_back(NewSample);
+	Sample* sample = new Sample(spiralInfo->BUFSIZE);
+    OutputPort* port = new OutputPort(name, type, sample);
+	m_Output.push_back(port);
 }
 
-void SpiralPlugin::RemoveOutput()
+void SpiralModule::addInput(const char* name, Sample::SampleType type)
 {
-	vector<Sample*>::iterator si=m_Output.end();
-	si--;
-	delete *si;
-	m_Output.erase(si);
+    InputPort* port = new InputPort(name, type, NULL);
+    m_Input.push_back(port);
 }
 
-void SpiralPlugin::RemoveAllOutputs()
+void SpiralModule::addIntControl(const char* name, int* data)
 {
-	for (vector<Sample*>::iterator i=m_Output.begin();
-		 i!=m_Output.end(); i++)
-	{
-		delete *i;
-	}
-
-	m_Output.clear();
+    // TODO
 }
 
-void SpiralPlugin::AddInput()
+void SpiralModule::addFloatControl(const char* name, float* data)
 {
-	m_Input.push_back(NULL);
-}
-
-void SpiralPlugin::RemoveInput()
-{
-	vector<const Sample*>::iterator si=m_Input.end();
-	si--;
-	m_Input.erase(si);
-}
-
-void SpiralPlugin::RemoveAllInputs()
-{
-	m_Input.clear();
-}
-
-void SpiralPlugin::UpdatePluginInfoWithHost()
-{
-	if (UpdateInfo!=NULL)
-	{
-		UpdateInfo(m_HostID,(void*)&m_PluginInfo);
-	}
-}
-void SpiralPlugin::SetUpdateInfoCallback(int ID, void(*s)(int, void *))
-{
-	m_HostID=ID;
-	UpdateInfo=s;
-}
-
-void SpiralPlugin::SetInPortType(PluginInfo &pinfo, int port, Sample::SampleType type)
-{
-    pinfo.PortTypes[port] = type;
-}
-
-void SpiralPlugin::SetOutPortType(PluginInfo &pinfo, int port, Sample::SampleType type)
-{
-    pinfo.PortTypes[port+m_PluginInfo.NumInputs] = type;
-    GetOutputBuf(port)->setSampleType(type);
+    // TODO
 }

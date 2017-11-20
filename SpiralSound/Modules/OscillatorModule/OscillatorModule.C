@@ -18,9 +18,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
-#include "OscillatorModule.h"
 #include <limits.h>
 #include <stdlib.h>
+#include "OscillatorModule.h"
+#include "../../Sample.h"
 
 using namespace std;
 
@@ -30,7 +31,8 @@ static const int IN_SHLEN = 2;
 
 static const int OUT_MAIN = 0;
 
-OscillatorModule::OscillatorModule()
+OscillatorModule::OscillatorModule(const SpiralInfo *info)
+    : SpiralModule(info)
 {
     m_Type = SQUARE;
     m_Octave = 0;
@@ -47,40 +49,21 @@ OscillatorModule::OscillatorModule()
 	m_Note = 0;
 	m_LastFreq = 0;
 
-	m_ModuleInfo.NumInputs = 3;
-	m_ModuleInfo.NumOutputs = 1;
-
-    /*
-     * ports:
-     * 1: Frequency CV
-     * 2: PulseWidth CV
-     * 3: Sample & Hold length CV
-     * 4: Output
-     */
-
-	m_AudioCH->Register("Octave", &m_Octave);
-	m_AudioCH->Register("FineFreq", &m_FineFreq);
-	m_AudioCH->Register("PulseWidth", &m_PulseWidth);
-	m_AudioCH->Register("Type", (char*)&m_Type);
-	m_AudioCH->Register("SHLen", &m_SHLen);
-	m_AudioCH->Register("ModAmount", &m_ModAmount);
+    // Input types might be wrong as these are CV inputs not audio
+    addInput("Frequency CV", Sample::AUDIO);
+    addInput("PulseWidth CV", Sample::AUDIO);
+    addInput("Sample & Hold length CV", Sample::AUDIO);
+    addOutput("Output", Sample::AUDIO);
+	addIntControl("Octave", &m_Octave);
+	addFloatControl("FineFreq", &m_FineFreq);
+	addFloatControl("PulseWidth", &m_PulseWidth);
+	addIntControl("Type", &m_Type);
+	addFloatControl("SHLen", &m_SHLen);
+	addFloatControl("ModAmount", &m_ModAmount);
 }
 
 OscillatorModule::~OscillatorModule()
 {
-}
-
-ModuleInfo &OscillatorModule::Initialise(const HostInfo *Host)
-{
-	return SpiralModule::Initialise(Host);
-}
-
-void OscillatorModule::Reset()
-{
-	ResetPorts();
-	m_CyclePos = 0;
-	m_Note = 0;
-	m_LastFreq = 0;
 }
 
 void OscillatorModule::Execute()
@@ -91,7 +74,7 @@ void OscillatorModule::Execute()
 	int samplelen, PW;
 	switch (m_Type) {
 	    case SQUARE:
-		    for (int n=0; n<m_HostInfo->BUFSIZE; n++) {
+		    for (int n=0; n<spiralInfo->BUFSIZE; n++) {
                 Freq = InputExists(0) ? GetInputPitch(0,n) : 110;
                 Freq *= m_FineFreq;
                 if (m_Octave > 0) {
@@ -100,7 +83,7 @@ void OscillatorModule::Execute()
                 if (m_Octave<0) {
                     Freq /= 1 << (-m_Octave);
                 }
-                CycleLen = m_HostInfo->SAMPLERATE / Freq;
+                CycleLen = spiralInfo->SAMPLERATE / Freq;
                 PW = (int)((m_PulseWidth + GetInput(IN_PW, n) * m_ModAmount) * CycleLen);
                 // calculate square wave pattern
                 m_CyclePos++;
@@ -115,7 +98,7 @@ void OscillatorModule::Execute()
             }
             break;
         case SAW:
-            for (int n=0; n<m_HostInfo->BUFSIZE; n++) {
+            for (int n=0; n<spiralInfo->BUFSIZE; n++) {
                 Freq = InputExists(0) ? GetInputPitch(0,n) : 110;
                 Freq *= m_FineFreq;
                 if (m_Octave > 0) {
@@ -124,7 +107,7 @@ void OscillatorModule::Execute()
                 if (m_Octave<0) {
                     Freq /= 1 << (-m_Octave);
                 }
-                CycleLen = m_HostInfo->SAMPLERATE / Freq;
+                CycleLen = spiralInfo->SAMPLERATE / Freq;
                 PW = (int)((m_PulseWidth + GetInput(IN_PW, n) * m_ModAmount) * CycleLen);
                 // get normailise position between cycle
                 m_CyclePos++;
@@ -141,10 +124,10 @@ void OscillatorModule::Execute()
             }
             break;
         case NOISE:
-		    for (int n=0; n<m_HostInfo->BUFSIZE; n++) {
+		    for (int n = 0; n < spiralInfo->BUFSIZE; n++) {
                 m_CyclePos++;
                 //modulate the sample & hold length
-                samplelen = (int)((m_SHLen + GetInput(IN_SHLEN, n) * m_ModAmount) * m_HostInfo->SAMPLERATE);
+                samplelen = (int)((m_SHLen + GetInput(IN_SHLEN, n) * m_ModAmount) * spiralInfo->SAMPLERATE);
                 // do sample & hold on the noise
                 if (m_CyclePos>samplelen) {
                     m_Noisev = (short)((rand() % SHRT_MAX * 2) - SHRT_MAX);

@@ -27,34 +27,33 @@
 class OscillatorModule : public SpiralModule
 {
     public:
-        OscillatorModule();
+
+        OscillatorModule(const SpiralInfo *info);
+
         virtual ~OscillatorModule();
-        virtual ModuleInfo &Initialise(const HostInfo *Host);
+
         virtual void Execute();
-        virtual void Reset();
-        virtual char *StreamOut();
-        virtual void StreamIn(char *data);
-        typedef char Type;
+
+        typedef int Type;
         enum { NONE, SQUARE, SAW, NOISE };
+
         void ModulateFreq(Sample *data)
         {
             m_FreqModBuf = data;
         }
+
         void ModulatePulseWidth(Sample *data)
         {
             m_PulseWidthModBuf = data;
         }
+
         void ModulateSHLen(Sample *data)
         {
             m_SHModBuf = data;
         }
+
         void NoteTrigger(int V, int s, int v);
-        int m_Octave;
-        float m_FineFreq;
-        float m_PulseWidth;
-        Type m_Type;
-        float m_SHLen;
-        float m_ModAmount;
+
     private:
         // Voice specific parameter
         int m_Note;
@@ -66,6 +65,13 @@ class OscillatorModule : public SpiralModule
         Sample *m_PulseWidthModBuf;
         Sample *m_SHModBuf;
         static const int FIXED;
+        // controls
+        int m_Octave;
+        float m_FineFreq;
+        float m_PulseWidth;
+        int m_Type;
+        float m_SHLen;
+        float m_ModAmount;
 };
 
 #endif
