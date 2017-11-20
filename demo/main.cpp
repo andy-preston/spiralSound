@@ -26,20 +26,28 @@
 #include "../SpiralSound/synthModular.h"
 #include "../SpiralSound/SpiralInfo.h"
 #include "../SpiralSound/Modules/OscillatorModule/OscillatorModule.h"
+#include "../SpiralSound/Modules/OutputModule/OutputModule.h"
 
 int main(int argc, char **argv)
 {
     SpiralInfo *info;
     SynthModular *synth;
     OscillatorModule *oscillator;
+    OutputModule *output;
 
     srand(time(NULL));
     info = new SpiralInfo();
     //info->OUTPUTFILE = "/dev/dsp";
 
 	synth = new SynthModular(info);
+
     oscillator = new OscillatorModule(info);
     synth->addModule(oscillator);
+
+    output = new OutputModule(info);
+    synth->addModule(output);
+
+    // TODO: connect the oscillator to the output
 
     synth->run();
 

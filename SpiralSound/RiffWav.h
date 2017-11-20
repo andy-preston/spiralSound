@@ -1,5 +1,5 @@
-/*  SpiralSynth
- *  Copyleft (C) 2000 David Griffiths <dave@pawfal.org>
+/*  SpiralSound Copyleft (C) 2017 Andy Preston <edgeeffect@gmail.com>
+ *  Based on SpiralSynthModular Copyleft (C) 2000 David Griffiths <dave@pawfal.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/ 
+*/
 
 #ifndef WAVFILE
 #define WAVFILE
@@ -23,8 +23,6 @@
 
 #include <stdio.h>
 #include "Sample.h"
-
-#include "../config.h"
 
 #ifdef USE_LIBSNDFILE
 #include <sndfile.h>
@@ -42,7 +40,7 @@ struct CanonicalWavHeader
 	char  RiffName[4];
 	int   RiffFileLength;
 	char  RiffTypeName[4];
-	
+
 	char  FmtName[4];
 	int   FmtLength;
 	short FmtTag;
@@ -72,11 +70,11 @@ public:
 #else
 	WavFile() : m_Stream(NULL), m_Samplerate(44100), m_BitsPerSample(16), m_DataStart(0) {}
 #endif
-	~WavFile() {Close();}	
-	
+	~WavFile() {Close();}
+
 	enum Mode{READ,WRITE};
 	enum Channels{MONO,STEREO};
-	
+
 	int  Open(std::string FileName, Mode mode=READ, Channels channels=MONO);
 	int  Close();
 
@@ -86,7 +84,7 @@ public:
 
 	int  Load(Sample &data);
 	int  Load(short *data);
-	
+
 	int  SeekToChunk(int Pos);
 	int  LoadChunk(int NumSamples, Sample &ldata, Sample &rdata);
 
@@ -114,12 +112,12 @@ public:
 	bool IsStereo() { return (m_Header.FmtChannels==2); }
 	bool IsOpen() { return m_Stream!=NULL; }
 	bool Recording() {return (m_Stream!=NULL);}
-#endif		
+#endif
 private:
 #ifdef USE_LIBSNDFILE
 	SNDFILE *m_FileHandle;
 	SF_INFO m_FileInfo;
-	
+
 	int m_BitsPerSample;
 
 	sf_count_t m_CurSeekPos;
@@ -130,7 +128,7 @@ private:
 
 	long m_DataStart;
 	long m_CurSeekPos;
-	
+
 	CanonicalWavHeader m_Header;
 	DataHeader m_DataHeader;
 #endif

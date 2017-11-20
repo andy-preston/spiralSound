@@ -1,5 +1,5 @@
-/*  SpiralSound
- *  Copyleft (C) 2001 David Griffiths <dave@pawfal.org>
+/*  SpiralSound Copyleft (C) 2017 Andy Preston <edgeeffect@gmail.com>
+ *  Based on SpiralSynthModular Copyleft (C) 2001 David Griffiths <dave@pawfal.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,12 +16,11 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "../SpiralPlugin.h"
+#include "../SpiralModule.h"
 #include "../../RiffWav.h"
-#include <FL/Fl_Pixmap.H>
 
-#ifndef OutputPLUGIN
-#define OutputPLUGIN
+#ifndef OUTPUT_MODULE
+#define OUTPUT_MODULE
 
 class OSSClient
 {
@@ -66,27 +65,23 @@ private:
 };
 
 
-class OutputPlugin : public AudioDriver
+class OutputModule : public AudioDriver
 {
 public:
 	enum Mode {NO_MODE,INPUT,OUTPUT,DUPLEX,CLOSED};
 
- 	OutputPlugin();
-	virtual ~OutputPlugin();
+ 	OutputModule(SpiralInfo* spiralinfo);
+	virtual ~OutputModule();
 
-	virtual PluginInfo& Initialise(const HostInfo *Host);
-	virtual SpiralGUIType*  CreateGUI();
+	//virtual PluginInfo& Initialise(const HostInfo *Host);
 
 	/* General Plugin Function */
 	virtual	void	Execute();
 	virtual void	ExecuteCommands();
 
-	virtual bool	Kill();
-	virtual void	Reset();
-	
 	/* Audio Driver Specific Functions */
 	virtual bool			IsAudioDriver() { return true; }
-	virtual AudioProcessType	ProcessType() { return AudioDriver::ALWAYS; }		
+	virtual AudioProcessType	ProcessType() { return AudioDriver::ALWAYS; }
 	virtual void			ProcessAudio();
 
 	/* OSS Plugin Specific Functions */
@@ -95,14 +90,11 @@ public:
 
 	Mode GetMode() { return m_Mode; }
 
-	/* OSS Plugin Streaming - soon to be obsolete and for backward compatibility only*/
-	virtual void	    StreamOut(std::ostream &s) {}
-	virtual void	    StreamIn(std::istream &s)  {}
 private:
 	static int m_RefCount;
 	static int m_NoExecuted;
 	static Mode m_Mode;
-        bool m_NotifyOpenOut;
+    bool m_NotifyOpenOut;
 	bool m_CheckedAlready;
 };
 

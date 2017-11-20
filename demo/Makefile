@@ -19,9 +19,11 @@ HEADERS = \
 	../SpiralSound/synthModular.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h \
+	../SpiralSound/RiffWav.h \
 	../SpiralSound/ChannelHandler.h \
 	../SpiralSound/Modules/SpiralModule.h \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.h \
+	../SpiralSound/Modules/OutputModule/OutputModule.h
 
 SOURCES = \
 	main.cpp \
@@ -31,6 +33,7 @@ SOURCES = \
 	../SpiralSound/ChannelHandler.C \
 	../SpiralSound/Modules/SpiralModule.C \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.C \
+	../SpiralSound/Modules/OutputModule/OutputModule.C
 
 OBJECTS = \
 	main.o \
@@ -39,7 +42,8 @@ OBJECTS = \
 	../SpiralSound/Sample.o \
 	../SpiralSound/ChannelHandler.o \
 	../SpiralSound/Modules/SpiralModule.o \
-	../SpiralSound/Modules/OscillatorModule/OscillatorModule.o
+	../SpiralSound/Modules/OscillatorModule/OscillatorModule.o \
+	../SpiralSound/Modules/OutputModule/OutputModule.o
 
 TARGET = \
 	demosynth
@@ -108,3 +112,10 @@ main.o : \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h
+
+../SpiralSound/Modules/OutputModule/OutputModule.o: \
+	../SpiralSound/Modules/OutputModule/OutputModule.C \
+	../SpiralSound/Modules/OutputModule/OutputModule.h \
+	../SpiralSound/SpiralInfo.h \
+	../SpiralSound/Sample.h \
+	../SpiralSound/RiffWav.h
