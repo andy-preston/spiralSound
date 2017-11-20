@@ -69,73 +69,55 @@ void SynthModular::Update()
 	if (m_Frozen) return;
 
 	for(map<int,DeviceNode*>::iterator i=deviceNodeMap.begin();
-		i!=deviceNodeMap.end(); i++)
-	{
-		#ifdef DEBUG_MODULES
-		cerr << "Updating channelhandler of Module "
-            << i->second->moduleID << endl;
+            i!=deviceNodeMap.end(); i++) {
+
+        #ifdef DEBUG_MODULES
+            cerr << "Updating channelhandler of Module " << i->second->moduleID << endl;
 		#endif
 
 		// updates the data from the gui thread, if it's not blocking
-			i->second->device->UpdateChannelHandler();
+		i->second->device->UpdateChannelHandler();
 
 		#ifdef DEBUG_MODULES
-		cerr << "Finished updating" << endl;
+            cerr << "Finished updating" << endl;
 		#endif
 
 		// If this is an audio device see if we always need to ProcessAudio here
-		if ((!m_ResetingAudioThread))
-		{
-			if (i->second->device->IsAudioDriver())
-			{
+		if ((!m_ResetingAudioThread)) {
+			if (i->second->device->IsAudioDriver()) {
 				AudioDriver *driver = ((AudioDriver *)i->second->device);
-
-				if (driver->ProcessType() == AudioDriver::ALWAYS)
-				{
+				if (driver->ProcessType() == AudioDriver::ALWAYS) {
 					driver->ProcessAudio();
 				}
 			}
-
 			// run any commands we've received from the GUI's
 			i->second->device->ExecuteCommands();
 		}
-	}
 
-	// run the Modules (only ones connected to anything)
-	list<int> ExecutionOrder = m_Canvas->GetGraph()->GetSortedList();
-	for (list<int>::reverse_iterator i=ExecutionOrder.rbegin();
-		 i!=ExecutionOrder.rend(); i++)
-	{
-		// use the graphsort order to remove internal latency
-		map<int,DeviceNode*>::iterator di=deviceNodeMap.find(*i);
-		if (di!=deviceNodeMap.end() && di->second->m_Device  && (! di->second->m_Device->IsDead()) && (!m_Info.PAUSED || m_ResetingAudioThread))
-		{
+        // SpiralSynthModular used a graph-sort here to determine the execution
+        // order and thus remove latency.
+
+		if (i!=deviceNodeMap.end() && (!m_Info.PAUSED || m_ResetingAudioThread)) {
+
 			#ifdef DEBUG_MODULES
-			cerr<<"Executing Module "<<di->second->m_ModuleID<<endl;
+                cerr << "Executing Module " << i->second->moduleID << endl;
 			#endif
 
-			if (m_ResetingAudioThread)
-			{
-				di->second->m_Device->Reset();
-			}
-			else
-			{
-				di->second->m_Device->Execute();
-
+			if (m_ResetingAudioThread) {
+				i->second->device->Reset();
+			} else {
+				i->second->device->Execute();
 				// If this is an audio device see if we need to ProcessAudio here
-				if (di->second->m_Device->IsAudioDriver())
-				{
-					AudioDriver *driver = ((AudioDriver *)di->second->m_Device);
-
-					if (driver->ProcessType() == AudioDriver::MANUAL)
-					{
+				if (i->second->device->IsAudioDriver()) {
+					AudioDriver *driver = ((AudioDriver *)i->second->device);
+					if (driver->ProcessType() == AudioDriver::MANUAL) {
 						driver->ProcessAudio();
 					}
 				}
 			}
 
 			#ifdef DEBUG_MODULES
-			cerr<<"Finished executing"<<endl;
+                cerr << "Finished executing" << endl;
 			#endif
 		}
 	}
