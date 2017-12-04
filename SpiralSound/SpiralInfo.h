@@ -41,6 +41,7 @@ class SpiralInfo {
         long MAXSAMPLE;
         float VALUECONV;
         int FILTERGRAN;
+        string OUTPUTFILE;
         static SpiralInfo* Get();
     private:
         static SpiralInfo *m_SpiralInfo;

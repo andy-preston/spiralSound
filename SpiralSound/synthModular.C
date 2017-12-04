@@ -91,7 +91,9 @@ void SynthModular::Update()
 		}
 		// run any commands we've received from the Control Panel
         // (formerly from the GUI)
-		i->second->ExecuteCommands();
+		/*
+        i->second->ExecuteCommands();
+        */
 
         // SpiralSynthModular used a graph-sort here to determine the execution
         // order and thus remove latency.

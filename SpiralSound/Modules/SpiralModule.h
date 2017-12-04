@@ -64,9 +64,11 @@ class SpiralModule {
 	    virtual void Execute() = 0;
 
         // run the commands from the Control panel
+        /*
         virtual void ExecuteCommands()
         {
         }
+        */
 
         // stuff here gets saved in filename_files directory
         // you must return true if this feature is used.
@@ -206,35 +208,41 @@ class SpiralModule {
 
 class AudioDriver : public SpiralModule
 {
-public:
-	/* if this is an ALWAYS process then ProcessAudio must
-	   always be called regardless whether it has something to
-	   process or not, so it is run along side GUI commands,
-	   ala ExecuteCommands, and is run even if paused.
+    public:
 
-	   If its MANUAL we are the ones doing the pushing of data
-	   so we don't have to worry about it if we aren't hooked up,
-	   and we do have to worry about synchronization with other
-	   Modules, so ProcessAudio should be run along side of
-	   regular audio updates, ala Execute. This is eg. for
-	   a File Output driver.
+        AudioDriver(const SpiralInfo *info) : SpiralModule(info)
+        {
+        }
 
-	   NEVER means we never need to run ProcessAudio, eg,
-	   a dummy audio driver.
-	 */
-	enum AudioProcessType { ALWAYS, MANUAL, NEVER };
 
-	virtual bool IsAudioDriver() { return true; }
+    	/* if this is an ALWAYS process then ProcessAudio must
+    	   always be called regardless whether it has something to
+    	   process or not, so it is run along side GUI commands,
+    	   ala ExecuteCommands, and is run even if paused.
 
-	virtual void ProcessAudio()=0;
+    	   If its MANUAL we are the ones doing the pushing of data
+    	   so we don't have to worry about it if we aren't hooked up,
+    	   and we do have to worry about synchronization with other
+    	   Modules, so ProcessAudio should be run along side of
+    	   regular audio updates, ala Execute. This is eg. for
+    	   a File Output driver.
 
-	virtual AudioProcessType ProcessType() { return NEVER; }
+    	   NEVER means we never need to run ProcessAudio, eg,
+    	   a dummy audio driver.
+    	 */
+    	enum AudioProcessType { ALWAYS, MANUAL, NEVER };
 
-	// Callbacks to main engine. Should only called by Module hosts.
-	void SetChangeBufferAndSampleRateCallback(void(*s)(long unsigned int, long unsigned int, void *)) { ChangeBufferAndSampleRate = s; } ;
+    	virtual bool IsAudioDriver() { return true; }
 
-protected:
-	void (*ChangeBufferAndSampleRate)(long unsigned int BufferSize, long unsigned int SampleRate, void *);
+    	virtual void ProcessAudio()=0;
+
+    	virtual AudioProcessType ProcessType() { return NEVER; }
+
+    	// Callbacks to main engine. Should only called by Module hosts.
+    	void SetChangeBufferAndSampleRateCallback(void(*s)(long unsigned int, long unsigned int, void *)) { ChangeBufferAndSampleRate = s; } ;
+
+    protected:
+    	void (*ChangeBufferAndSampleRate)(long unsigned int BufferSize, long unsigned int SampleRate, void *);
 };
 
 #endif

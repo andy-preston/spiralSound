@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 
     srand(time(NULL));
     info = new SpiralInfo();
-    //info->OUTPUTFILE = "/dev/dsp";
+    info->OUTPUTFILE = "/dev/dsp";
 
 	synth = new SynthModular(info);
 

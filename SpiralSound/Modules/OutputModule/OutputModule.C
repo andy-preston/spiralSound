@@ -40,7 +40,7 @@ static const int IN_SHLEN = 2;
 
 static const int OUT_MAIN = 0;
 
-static const HostInfo* host;
+static const SpiralInfo* spiralInfo;
 OSSClient* OSSClient::m_Singleton = NULL;
 int OutputModule::m_RefCount=0;
 int OutputModule::m_NoExecuted=0;
@@ -54,7 +54,8 @@ OutputModule::Mode OutputModule::m_Mode=NO_MODE;
 								}
 
 
-OutputModule::OutputModule() :
+OutputModule::OutputModule(SpiralInfo* info) :
+AudioDriver(info),
 m_Volume(1.0f)
 {
 	m_RefCount++;
@@ -62,13 +63,15 @@ m_Volume(1.0f)
 	m_IsTerminal=true;
     m_NotifyOpenOut=false;
 
-	m_PluginInfo.PortTips.push_back("Left Out");
-	m_PluginInfo.PortTips.push_back("Right Out");
-	//m_PluginInfo.PortTips.push_back("Record Controller");
-	m_PluginInfo.PortTips.push_back("Left In");
-	m_PluginInfo.PortTips.push_back("Right In");
-	m_AudioCH->Register ("Volume", &m_Volume);
-    m_AudioCH->Register ("OpenOut", &m_NotifyOpenOut, ChannelHandler::OUTPUT);
+	addOutput("Left Out", Sample::AUDIO);
+	addOutput("Right Out", Sample::AUDIO);
+	addInput("Left In", Sample::AUDIO);
+	addInput("Right In", Sample::AUDIO);
+	addFloatControl("Volume", &m_Volume);
+    //m_AudioCH->Register ("OpenOut", &m_NotifyOpenOut, ChannelHandler::OUTPUT);
+
+    spiralInfo = info;
+    OSSClient::Get()->AllocateBuffer();
 }
 
 OutputModule::~OutputModule()
@@ -82,72 +85,13 @@ OutputModule::~OutputModule()
 	}
 }
 
-PluginInfo &OutputModule::Initialise(const HostInfo *Host)
-{
-	PluginInfo& Info= SpiralPlugin::Initialise(Host);
-	host=Host;
-	OSSClient::Get()->AllocateBuffer();
-
-	return Info;
-}
-
-SpiralGUIType *OutputModule::CreateGUI()
-{
-	return new OutputModuleGUI(m_PluginInfo.Width, m_PluginInfo.Height, this, m_AudioCH, m_HostInfo);
-}
-
-
-bool OutputModule::Kill()
-{
-	m_IsDead=true;
-	OSSClient::Get()->Kill();
-	m_Mode=CLOSED;
-	cb_Blocking(m_Parent,false);
-	return true;
-}
-
-void OutputModule::Reset()
-{
-	if (m_IsDead) return;
-	m_IsDead=true;
-	OSSClient::Get()->Kill();
-	cb_Blocking(m_Parent,false);
-	ResetPorts();
-	OSSClient::Get()->AllocateBuffer();
-
-	switch (m_Mode)
-	{
-		case INPUT :
-			OSSClient::Get()->OpenRead();
-			cb_Blocking(m_Parent,true);
-		break;
-		case OUTPUT :
-			OSSClient::Get()->OpenWrite();
-			cb_Blocking(m_Parent,true);
-		break;
-		case DUPLEX :
-			OSSClient::Get()->OpenReadWrite();
-			cb_Blocking(m_Parent,true);
-		break;
-
-		default:{}
-	}
-
-	m_IsDead=false;
-}
-
 void OutputModule::Execute()
 {
-	if (m_IsDead)
-		return;
-
-        if (m_Mode==NO_MODE && m_RefCount==1)
-	{
-		if (OSSClient::Get()->OpenWrite())
-		{
-			cb_Blocking(m_Parent,true);
-			m_Mode=OUTPUT;
-                        m_NotifyOpenOut=true;
+    if (m_Mode==NO_MODE && m_RefCount==1) {
+		if (OSSClient::Get()->OpenWrite()) {
+			cb_Blocking(m_Parent, true);
+			m_Mode = OUTPUT;
+            m_NotifyOpenOut = true;
 		}
 	}
 
@@ -160,64 +104,59 @@ void OutputModule::Execute()
            OSSClient::Get()->GetStereo(GetOutputBuf(0),GetOutputBuf(1));
 }
 
+/*
 void OutputModule::ExecuteCommands()
 {
-	if (m_IsDead)
-		return;
-
-	if (m_AudioCH->IsCommandWaiting())
-	{
-		switch(m_AudioCH->GetCommand())
-		{
-			case OPENREAD :
-				if (OSSClient::Get()->OpenRead())
-				{
-					m_Mode=INPUT;
+	if (m_AudioCH->IsCommandWaiting()) {
+		switch(m_AudioCH->GetCommand()) {
+			case OPENREAD:
+				if (OSSClient::Get()->OpenRead()) {
+					m_Mode = INPUT;
 					//cb_Blocking(m_Parent,true);
 				}
-			break;
-			case OPENWRITE :
-				if (OSSClient::Get()->OpenWrite())
-				{
-					m_Mode=OUTPUT;
+                break;
+			case OPENWRITE:
+				if (OSSClient::Get()->OpenWrite()) {
+					m_Mode = OUTPUT;
 					cb_Blocking(m_Parent,true);
 				}
-			break;
-			case OPENDUPLEX :
-				if (OSSClient::Get()->OpenReadWrite())
-				{
-					m_Mode=DUPLEX;
-					cb_Blocking(m_Parent,true);
+                break;
+			case OPENDUPLEX:
+				if (OSSClient::Get()->OpenReadWrite()) {
+					m_Mode = DUPLEX;
+					cb_Blocking(m_Parent, true);
 				}
-			break;
-			case CLOSE :
-				m_Mode=CLOSED;
-				cb_Blocking(m_Parent,false);
+                break;
+			case CLOSE:
+				m_Mode = CLOSED;
+				cb_Blocking(m_Parent, false);
 				OSSClient::Get()->Close();
-			break;
+                break;
 			case SET_VOLUME :
-                                OSSClient::Get()->SetVolume(m_Volume);
-                                break;
-                        case CLEAR_NOTIFY:
-                                m_NotifyOpenOut=false;
-                                break;
-                        default: break;
+                OSSClient::Get()->SetVolume(m_Volume);
+                break;
+            case CLEAR_NOTIFY:
+                m_NotifyOpenOut = false;
+                break;
+            default:
+                break;
 		}
-        }
+    }
 }
+*/
 
 void OutputModule::ProcessAudio()
 {
-	if (m_IsDead)
-		return;
-
-	// Only Play() once per set of plugins
+	// Only Play() once per set of modules
 	m_NoExecuted--;
-	if (m_NoExecuted<=0)
-	{
-		if (m_Mode==INPUT || m_Mode==DUPLEX) OSSClient::Get()->Read();
-		if (m_Mode==OUTPUT || m_Mode==DUPLEX) OSSClient::Get()->Play();
-		m_NoExecuted=m_RefCount;
+	if (m_NoExecuted <= 0) {
+		if (m_Mode == INPUT || m_Mode == DUPLEX) {
+            OSSClient::Get()->Read();
+        }
+		if (m_Mode == OUTPUT || m_Mode == DUPLEX) {
+            OSSClient::Get()->Play();
+        }
+		m_NoExecuted = m_RefCount;
 	}
 }
 
@@ -229,8 +168,7 @@ m_Amp(0.5),
 m_Channels(2),
 m_ReadBufferNum(0),
 m_WriteBufferNum(0),
-m_OutputOk(false),
-m_IsDead(false)
+m_OutputOk(false)
 
 {
 	m_Buffer[0]=NULL;
@@ -253,7 +191,7 @@ void OSSClient::AllocateBuffer()
 {
 	if (m_Buffer[0]==NULL)
 	{
-		m_BufSizeBytes=host->BUFSIZE*m_Channels*2;
+		m_BufSizeBytes=spiralInfo->BUFSIZE*m_Channels*2;
 
 		// initialise for stereo
 		m_Buffer[0] = (short*) calloc(m_BufSizeBytes/2,m_BufSizeBytes);
@@ -285,10 +223,8 @@ void OSSClient::SendStereo(const Sample *ldata,const Sample *rdata)
 
 	int on=0;
 	float t;
-	for (int n=0; n<host->BUFSIZE; n++)
+	for (int n=0; n<spiralInfo->BUFSIZE; n++)
 	{
-		if (m_IsDead) return;
-
 		// stereo channels - interleave
 		if (ldata)
 		{
@@ -317,7 +253,7 @@ void OSSClient::Play()
     int BufferToSend=!m_WriteBufferNum;
 
     #if __BYTE_ORDER == BIG_ENDIAN
-    for (int n=0; n<host->BUFSIZE*m_Channels; n++)
+    for (int n=0; n<spiralInfo->BUFSIZE*m_Channels; n++)
     {
 		m_Buffer[BufferToSend][n]=(short)((m_Buffer[BufferToSend][n]<<8)&0xff00)|
 		                                 ((m_Buffer[BufferToSend][n]>>8)&0xff);
@@ -339,10 +275,8 @@ void OSSClient::GetStereo(Sample *ldata,Sample *rdata)
 	if (m_Channels!=2) return;
 
 	int on=0;
-	for (int n=0; n<host->BUFSIZE; n++)
+	for (int n=0; n<spiralInfo->BUFSIZE; n++)
 	{
-		if (m_IsDead) return;
-
 		// stereo channels - interleave
 		if (ldata) ldata->Set(n,(m_InBuffer[m_ReadBufferNum][on]*m_Amp)/(float)SHRT_MAX);
 		on++;
@@ -361,7 +295,7 @@ void OSSClient::Read()
 		read(m_Dspfd,m_InBuffer[BufferToRead],m_BufSizeBytes);
 
     #if __BYTE_ORDER == BIG_ENDIAN
-    for (int n=0; n<host->BUFSIZE*m_Channels; n++)
+    for (int n=0; n<spiralInfo->BUFSIZE*m_Channels; n++)
     {
 		m_InBuffer[BufferToRead][n]=(short)((m_InBuffer[BufferToRead][n]<<8)&0xff00)|
 		                                   ((m_InBuffer[BufferToRead][n]>>8)&0xff);
@@ -388,7 +322,7 @@ bool OSSClient::OpenWrite()
 	int result,val;
 	cerr<<"Opening dsp output"<<endl;
 
-	m_Dspfd = open(host->OUTPUTFILE.c_str(),O_WRONLY);
+	m_Dspfd = open(spiralInfo->OUTPUTFILE.c_str(),O_WRONLY);
 	if(m_Dspfd<0)
 	{
 		fprintf(stderr,"Can't open audio driver for writing.\n");
@@ -401,12 +335,12 @@ bool OSSClient::OpenWrite()
 	CHECK_AND_REPORT_ERROR;
 
 	short fgmtsize=0;
-	int numfgmts=host->FRAGCOUNT;
-	if (host->FRAGCOUNT==-1) numfgmts=0x7fff;
+	int numfgmts=spiralInfo->FRAGCOUNT;
+	if (spiralInfo->FRAGCOUNT==-1) numfgmts=0x7fff;
 
 	for (int i=0; i<32; i++)
 	{
-		if ((host->FRAGSIZE)==(1<<i))
+		if ((spiralInfo->FRAGSIZE)==(1<<i))
 		{
 			fgmtsize=i;
 			break;
@@ -415,7 +349,7 @@ bool OSSClient::OpenWrite()
 
 	if (fgmtsize==0)
 	{
-		cerr<<"Fragment size ["<<host->FRAGSIZE<<"] must be power of two!"<<endl;
+		cerr<<"Fragment size ["<<spiralInfo->FRAGSIZE<<"] must be power of two!"<<endl;
 		fgmtsize=256;
 	}
 
@@ -437,7 +371,7 @@ bool OSSClient::OpenWrite()
 	result = ioctl(m_Dspfd,SNDCTL_DSP_STEREO,&val);
 	CHECK_AND_REPORT_ERROR;
 
-	val = host->SAMPLERATE;
+	val = spiralInfo->SAMPLERATE;
 	result = ioctl(m_Dspfd,SNDCTL_DSP_SPEED,&val);
 	CHECK_AND_REPORT_ERROR;
 
@@ -453,7 +387,7 @@ bool OSSClient::OpenRead()
 
 	cerr<<"Opening dsp input"<<endl;
 
-	m_Dspfd = open(host->OUTPUTFILE.c_str(),O_RDONLY);
+	m_Dspfd = open(spiralInfo->OUTPUTFILE.c_str(),O_RDONLY);
 	if(m_Dspfd<0)
 	{
 		fprintf(stderr,"Can't open audio driver for reading.\n");
@@ -472,7 +406,7 @@ bool OSSClient::OpenRead()
 	result = ioctl(m_Dspfd,SNDCTL_DSP_SETFMT,&val);
 	CHECK_AND_REPORT_ERROR;
 
-	val = host->SAMPLERATE;
+	val = spiralInfo->SAMPLERATE;
 	result = ioctl(m_Dspfd,SNDCTL_DSP_SPEED,&val);
 	CHECK_AND_REPORT_ERROR;
 	m_OutputOk=true;
@@ -487,7 +421,7 @@ bool OSSClient::OpenReadWrite()
 	int result,val;
 	cerr<<"Opening dsp output (duplex)"<<endl;
 
-	m_Dspfd = open(host->OUTPUTFILE.c_str(),O_RDWR);
+	m_Dspfd = open(spiralInfo->OUTPUTFILE.c_str(),O_RDWR);
 	if(m_Dspfd<0)
 	{
 		fprintf(stderr,"Can't open audio driver for writing.\n");
@@ -500,12 +434,12 @@ bool OSSClient::OpenReadWrite()
 	CHECK_AND_REPORT_ERROR;
 
 	short fgmtsize=0;
-	int numfgmts=host->FRAGCOUNT;
-	if (host->FRAGCOUNT==-1) numfgmts=0x7fff;
+	int numfgmts=spiralInfo->FRAGCOUNT;
+	if (spiralInfo->FRAGCOUNT==-1) numfgmts=0x7fff;
 
 	for (int i=0; i<32; i++)
 	{
-		if ((host->FRAGSIZE)==(1<<i))
+		if ((spiralInfo->FRAGSIZE)==(1<<i))
 		{
 			fgmtsize=i;
 			break;
@@ -514,7 +448,7 @@ bool OSSClient::OpenReadWrite()
 
 	if (fgmtsize==0)
 	{
-		cerr<<"Fragment size ["<<host->FRAGSIZE<<"] must be power of two!"<<endl;
+		cerr<<"Fragment size ["<<spiralInfo->FRAGSIZE<<"] must be power of two!"<<endl;
 		fgmtsize=256;
 	}
 
@@ -536,7 +470,7 @@ bool OSSClient::OpenReadWrite()
 	result = ioctl(m_Dspfd,SNDCTL_DSP_STEREO,&val);
 	CHECK_AND_REPORT_ERROR;
 
-	val = host->SAMPLERATE;
+	val = spiralInfo->SAMPLERATE;
 	result = ioctl(m_Dspfd,SNDCTL_DSP_SPEED,&val);
 	CHECK_AND_REPORT_ERROR;
 	m_OutputOk=true;

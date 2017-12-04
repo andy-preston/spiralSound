@@ -70,14 +70,16 @@ class OutputModule : public AudioDriver
 public:
 	enum Mode {NO_MODE,INPUT,OUTPUT,DUPLEX,CLOSED};
 
- 	OutputModule(SpiralInfo* spiralinfo);
+ 	OutputModule(SpiralInfo* info);
 	virtual ~OutputModule();
 
 	//virtual PluginInfo& Initialise(const HostInfo *Host);
 
 	/* General Plugin Function */
 	virtual	void	Execute();
-	virtual void	ExecuteCommands();
+	/*
+    virtual void	ExecuteCommands();
+    */
 
 	/* Audio Driver Specific Functions */
 	virtual bool			IsAudioDriver() { return true; }
