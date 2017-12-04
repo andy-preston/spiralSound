@@ -39,17 +39,22 @@ int main(int argc, char **argv)
     info = new SpiralInfo();
     info->OUTPUTFILE = "/dev/dsp";
 
+    cout << "create synth\n";
 	synth = new Synth(info);
 
+    cout << "add osc\n";
     oscillator = new OscillatorModule(info);
     synth->addModule(oscillator);
 
+    cout << "add output\n";
     output = new OutputModule(info);
     synth->addModule(output);
 
+    cout << "connect\n";
     synth->connect(oscillator, "Output", output, "Left Out");
     synth->connect(oscillator, "Output", output, "Right Out");
 
+    cout << "run\n";
     synth->run();
 
 	return 1;
