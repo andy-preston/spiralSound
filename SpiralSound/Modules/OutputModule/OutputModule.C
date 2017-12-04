@@ -40,14 +40,12 @@ static const int IN_SHLEN = 2;
 
 static const int OUT_MAIN = 0;
 
-static const SpiralInfo* spiralInfo;
 OSSClient* OSSClient::m_Singleton = NULL;
 int OutputModule::m_RefCount=0;
 int OutputModule::m_NoExecuted=0;
 OutputModule::Mode OutputModule::m_Mode=NO_MODE;
 
-#define CHECK_AND_REPORT_ERROR	if (result<0)         \
-								{                     \
+#define CHECK_AND_REPORT_ERROR if (result<0) { \
 									perror("Sound device did not accept settings"); \
 									m_OutputOk=false; \
 									return false;     \
@@ -70,8 +68,7 @@ m_Volume(1.0f)
 	addFloatControl("Volume", &m_Volume);
     //m_AudioCH->Register ("OpenOut", &m_NotifyOpenOut, ChannelHandler::OUTPUT);
 
-    spiralInfo = info;
-    OSSClient::Get()->AllocateBuffer();
+    OSSClient::Get()->Initialise(info);
 }
 
 OutputModule::~OutputModule()
@@ -161,7 +158,6 @@ void OutputModule::ProcessAudio()
 }
 
 //////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
 
 OSSClient::OSSClient() :
 m_Amp(0.5),
@@ -169,7 +165,6 @@ m_Channels(2),
 m_ReadBufferNum(0),
 m_WriteBufferNum(0),
 m_OutputOk(false)
-
 {
 	m_Buffer[0]=NULL;
 	m_Buffer[1]=NULL;
@@ -177,36 +172,11 @@ m_OutputOk(false)
 	m_InBuffer[1]=NULL;
 }
 
-//////////////////////////////////////////////////////////////////////
-
 OSSClient::~OSSClient()
 {
 	Close();
-	DeallocateBuffer();
-}
-
-//////////////////////////////////////////////////////////////////////
-
-void OSSClient::AllocateBuffer()
-{
-	if (m_Buffer[0]==NULL)
-	{
-		m_BufSizeBytes=spiralInfo->BUFSIZE*m_Channels*2;
-
-		// initialise for stereo
-		m_Buffer[0] = (short*) calloc(m_BufSizeBytes/2,m_BufSizeBytes);
-		m_Buffer[1] = (short*) calloc(m_BufSizeBytes/2,m_BufSizeBytes);
-		m_InBuffer[0] = (short*) calloc(m_BufSizeBytes/2,m_BufSizeBytes);
-		m_InBuffer[1] = (short*) calloc(m_BufSizeBytes/2,m_BufSizeBytes);
-	}
-}
-
-void OSSClient::DeallocateBuffer()
-{
-	if (m_Buffer[0]!=NULL)
-	{
+    if (m_Buffer[0]!=NULL) {
 		m_BufSizeBytes=0;
-
 		// initialise for stereo
 		free(m_Buffer[0]);
 		free(m_Buffer[1]);
@@ -215,7 +185,16 @@ void OSSClient::DeallocateBuffer()
 	}
 }
 
-//////////////////////////////////////////////////////////////////////
+void OSSClient::Initialise(SpiralInfo *info)
+{
+    spiralInfo = info;
+	if (m_Buffer[0] == NULL) {
+		m_BufSizeBytes = spiralInfo->BUFSIZE * m_Channels * 2;
+		// initialise for stereo
+		m_Buffer[0] = (short*) calloc(m_BufSizeBytes / 2, m_BufSizeBytes);
+		m_Buffer[1] = (short*) calloc(m_BufSizeBytes / 2, m_BufSizeBytes);
+		m_InBuffer[0] = (short*) calloc(m_BufSizeBytes / 2, m_BufSizeBytes);
+		m_InBuffer[1] = (short*) calloc(m_BufSizeBytes / 2, m_BufSizeBytes);
 
 void OSSClient::SendStereo(const Sample *ldata,const Sample *rdata)
 {

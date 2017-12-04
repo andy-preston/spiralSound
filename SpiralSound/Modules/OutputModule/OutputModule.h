@@ -24,46 +24,77 @@
 
 class OSSClient
 {
-public:
-	static OSSClient *Get()       { if(!m_Singleton) m_Singleton=new OSSClient; return m_Singleton; }
-	static void PackUpAndGoHome() { if(m_Singleton)  { delete m_Singleton; m_Singleton=NULL; } }
+    public:
+
+	static OSSClient *Get() {
+        if (!m_Singleton) {
+            m_Singleton = new OSSClient;
+        }
+        return m_Singleton;
+    }
+
+	static void PackUpAndGoHome() {
+        if (m_Singleton) {
+            delete m_Singleton;
+            m_Singleton = NULL;
+        }
+    }
+
 	~OSSClient();
 
-	void    AllocateBuffer();
-	void    DeallocateBuffer();
-	void    SendStereo(const Sample *ldata,const Sample *rdata);
-	void    GetStereo(Sample *ldata,Sample *rdata);
-	void    SetVolume(float s) {m_Amp=s;}
-	void    SetNumChannels(int s) {m_Channels=s;}
-	float   GetVolume() {return m_Amp;}
-	void    Play();
-	void    Read();
+	void Initialise(SpiralInfo *info);
 
-	short  *GetBuffer() {return m_Buffer[m_WriteBufferNum];}
+    void SendStereo(const Sample *ldata, const Sample *rdata);
 
-	bool 	OpenReadWrite();
-	bool    OpenWrite();
-	bool    OpenRead();
-	bool    Close();
-	void    Kill() { m_IsDead = true; m_OutputOk=false; PackUpAndGoHome(); }
+    void GetStereo(Sample *ldata, Sample *rdata);
+
+    void SetVolume(float s) {
+        m_Amp = s;
+    }
+
+    void SetNumChannels(int s) {
+        m_Channels = s;
+    }
+
+    float GetVolume() {
+        return m_Amp;
+    }
+
+	void Play();
+
+    void Read();
+
+	short *GetBuffer() {
+        return m_Buffer[m_WriteBufferNum];
+    }
+
+	bool OpenReadWrite();
+	bool OpenWrite();
+	bool OpenRead();
+	bool Close();
+	void Kill() {
+        m_IsDead = true;
+        m_OutputOk=false;
+        PackUpAndGoHome();
+    }
+
 private:
-	static OSSClient* m_Singleton;
-
+    static OSSClient* m_Singleton;
+    SpiralInfo *spiralInfo;
  	OSSClient();
-
-	short  *m_Buffer[2];
-	short  *m_InBuffer[2];
-	int     m_BufSizeBytes;
-	int     m_Dspfd;
-	float   m_Amp;
-	int     m_Channels;
-
-	int    	m_ReadBufferNum;
-	int     m_WriteBufferNum;
-	bool    m_OutputOk;
-	bool	m_IsDead;
+	short *m_Buffer[2];
+	short *m_InBuffer[2];
+	int m_BufSizeBytes;
+	int m_Dspfd;
+	float m_Amp;
+	int m_Channels;
+	int m_ReadBufferNum;
+	int m_WriteBufferNum;
+	bool m_OutputOk;
+	bool m_IsDead;
 };
 
+////////////////////////////////////////////////////////////////////////////////
 
 class OutputModule : public AudioDriver
 {
