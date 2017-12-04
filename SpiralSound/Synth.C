@@ -27,30 +27,30 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <dlfcn.h>
-#include "synthModular.h"
+#include "Synth.h"
 
 //#define DEBUG_MODULES
 //#define DEBUG_STREAM
 
 using namespace std;
 
-bool SynthModular::m_BlockingOutputModuleIsReady = false;
+bool Synth::m_BlockingOutputModuleIsReady = false;
 
 //////////////////////////////////////////////////////////
 
-SynthModular::SynthModular(SpiralInfo *info) {
+Synth::Synth(SpiralInfo *info) {
     spiralInfo = info;
 }
 
 //////////////////////////////////////////////////////////
 
-SynthModular::~SynthModular()
+Synth::~Synth()
 {
 }
 
 //////////////////////////////////////////////////////////
 
-void SynthModular::run()
+void Synth::run()
 {
     for (;;) {
         Update();
@@ -61,7 +61,7 @@ void SynthModular::run()
     }
 }
 
-void SynthModular::Update()
+void Synth::Update()
 {
     // TODO - we need something to do the job of the ChannelHandler
     // and pass commands on to the modules
@@ -95,7 +95,7 @@ void SynthModular::Update()
         i->second->ExecuteCommands();
         */
 
-        // SpiralSynthModular used a graph-sort here to determine the execution
+        // SpiralSynth used a graph-sort here to determine the execution
         // order and thus remove latency.
 
 		if ((i != deviceMap.end())) {
@@ -120,7 +120,7 @@ void SynthModular::Update()
 	}
 }
 
-void SynthModular::addModule(SpiralModule* module)
+void Synth::addModule(SpiralModule* module)
 {
     module->SetParent((void*)this);
     /*
@@ -131,4 +131,12 @@ void SynthModular::addModule(SpiralModule* module)
         );
     }
     */
+}
+
+void Synth::connect(SpiralModule* sourceMod, string sourcePort,
+    SpiralModule* destMod, string destPort)
+{
+	Sample *sample=NULL;
+	destMod->GetOutput(destPort, &sample);
+    sourceMod->SetInput(sourcePort, (const Sample*)sample);
 }

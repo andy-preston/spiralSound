@@ -16,31 +16,28 @@ LIBS	=   -lm
 ####### Files
 
 HEADERS = \
-	../SpiralSound/synthModular.h \
+	../SpiralSound/Synth.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h \
 	../SpiralSound/RiffWav.h \
-	../SpiralSound/ChannelHandler.h \
 	../SpiralSound/Modules/SpiralModule.h \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.h \
 	../SpiralSound/Modules/OutputModule/OutputModule.h
 
 SOURCES = \
 	main.cpp \
-	../SpiralSound/synthModular.C \
+	../SpiralSound/Synth.C \
 	../SpiralSound/SpiralInfo.C \
 	../SpiralSound/Sample.C \
-	../SpiralSound/ChannelHandler.C \
 	../SpiralSound/Modules/SpiralModule.C \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.C \
 	../SpiralSound/Modules/OutputModule/OutputModule.C
 
 OBJECTS = \
 	main.o \
-	../SpiralSound/synthModular.o \
+	../SpiralSound/Synth.o \
 	../SpiralSound/SpiralInfo.o \
 	../SpiralSound/Sample.o \
-	../SpiralSound/ChannelHandler.o \
 	../SpiralSound/Modules/SpiralModule.o \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.o \
 	../SpiralSound/Modules/OutputModule/OutputModule.o
@@ -79,17 +76,13 @@ clean:
 
 main.o : \
 	main.cpp \
-	../SpiralSound/synthModular.h
+	../SpiralSound/Synth.h
 
-../SpiralSound/synthModular.o: \
-	../SpiralSound/synthModular.C \
-	../SpiralSound/synthModular.h \
+../SpiralSound/Synth.o: \
+	../SpiralSound/Synth.C \
+	../SpiralSound/Synth.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Modules/SpiralModule.h
-
-../SpiralSound/ChannelHandler.o: \
-	SpiralSound/ChannelHandler.C \
-	SpiralSound/ChannelHandler.h
 
 ../SpiralSound/SpiralInfo.o: \
 	../SpiralSound/SpiralInfo.C \

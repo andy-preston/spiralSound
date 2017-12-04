@@ -35,7 +35,6 @@ class InputPort
     public:
         InputPort(const char* Name, Sample::SampleType Type, const Sample* Data);
         const Sample* Data;
-    private:
         const char* Name;
         Sample::SampleType Type;
 };
@@ -44,7 +43,6 @@ class OutputPort {
     public:
         OutputPort(const char* Name, Sample::SampleType Type, Sample* Data);
         Sample* Data;
-    private:
         const char* Name;
         Sample::SampleType Type;
 };
@@ -86,15 +84,8 @@ class SpiralModule {
             return spiralInfo;
         }
 
-        void GetOutput(unsigned int n, Sample **s)
-        {
-        	*s = m_Output[n]->Data;
-        }
-
-        void SetInput(unsigned int n, const Sample *s)
-        {
-        	m_Input[n]->Data = s;
-        }
+        void GetOutput(string name, Sample **s);
+        void SetInput(string name, const Sample *s);
 
         const Sample* GetInput(unsigned int n)
         {

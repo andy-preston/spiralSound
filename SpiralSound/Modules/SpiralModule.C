@@ -17,6 +17,7 @@
  */
 
 #include <sstream>
+#include <stdexcept>
 #include "SpiralModule.h"
 
 using namespace std;
@@ -68,6 +69,31 @@ void SpiralModule::addInput(const char* name, Sample::SampleType type)
     InputPort* port = new InputPort(name, type, NULL);
     m_Input.push_back(port);
 }
+
+void SpiralModule::GetOutput(string name, Sample **s)
+{
+    for(std::vector<OutputPort*>::iterator outputPort = m_Output.begin();
+            outputPort != m_Output.end(); ++outputPort) {
+        if ((*outputPort)->Name == name) {
+            *s = (*outputPort)->Data;
+            return;
+        }
+    }
+    throw std::invalid_argument("Can't find output: " + name );
+}
+
+void SpiralModule::SetInput(string name, const Sample *s)
+{
+    for(std::vector<InputPort*>::iterator inputPort = m_Input.begin();
+            inputPort != m_Input.end(); ++inputPort) {
+        if ((*inputPort)->Name == name) {
+            (*inputPort)->Data = s;
+            return;
+        }
+    }
+    throw std::invalid_argument("Can't find input: " + name );
+}
+
 
 void SpiralModule::addIntControl(const char* name, int* data)
 {
