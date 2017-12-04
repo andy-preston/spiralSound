@@ -61,10 +61,10 @@ m_Volume(1.0f)
 	m_IsTerminal=true;
     m_NotifyOpenOut=false;
 
-	addOutput("Left Out", Sample::AUDIO);
-	addOutput("Right Out", Sample::AUDIO);
-	addInput("Left In", Sample::AUDIO);
-	addInput("Right In", Sample::AUDIO);
+	addInput("Left Out", Sample::AUDIO);
+	addInput("Right Out", Sample::AUDIO);
+	addOutput("Left In", Sample::AUDIO);
+	addOutput("Right In", Sample::AUDIO);
 	addFloatControl("Volume", &m_Volume);
     //m_AudioCH->Register ("OpenOut", &m_NotifyOpenOut, ChannelHandler::OUTPUT);
 

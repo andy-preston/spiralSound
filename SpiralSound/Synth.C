@@ -137,6 +137,6 @@ void Synth::connect(SpiralModule* sourceMod, string sourcePort,
     SpiralModule* destMod, string destPort)
 {
 	Sample *sample=NULL;
-	destMod->GetOutput(destPort, &sample);
-    sourceMod->SetInput(sourcePort, (const Sample*)sample);
+	sourceMod->GetOutput(sourcePort, &sample);
+    destMod->SetInput(destPort, (const Sample*)sample);
 }
