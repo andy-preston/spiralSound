@@ -195,6 +195,8 @@ void OSSClient::Initialise(SpiralInfo *info)
 		m_Buffer[1] = (short*) calloc(m_BufSizeBytes / 2, m_BufSizeBytes);
 		m_InBuffer[0] = (short*) calloc(m_BufSizeBytes / 2, m_BufSizeBytes);
 		m_InBuffer[1] = (short*) calloc(m_BufSizeBytes / 2, m_BufSizeBytes);
+    }
+}
 
 void OSSClient::SendStereo(const Sample *ldata,const Sample *rdata)
 {
