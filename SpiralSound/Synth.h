@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <list>
 #include "SpiralInfo.h"
 #include "Modules/SpiralModule.h"
 
@@ -42,9 +43,8 @@ class Synth
             SpiralModule* destMod, string destPort);
     private:
         SpiralInfo *spiralInfo;
-        map<int,SpiralModule*> deviceMap;
+        std::list<SpiralModule*> moduleList;
         static bool m_BlockingOutputModuleIsReady;
-        void Update();
 };
 
 #endif

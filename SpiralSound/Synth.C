@@ -1,5 +1,5 @@
 /*
- * SpiralSound demo synth
+ * SpiralSound Synth Engine
  *     - Copyleft (C) 2016 Andy Preston <edgeeffect@gmail.com
  * based on SpiralSynthModular
  *     - Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
@@ -29,9 +29,6 @@
 #include <dlfcn.h>
 #include "Synth.h"
 
-//#define DEBUG_MODULES
-//#define DEBUG_STREAM
-
 using namespace std;
 
 bool Synth::m_BlockingOutputModuleIsReady = false;
@@ -52,39 +49,22 @@ Synth::~Synth()
 
 void Synth::run()
 {
-    for (;;) {
-        Update();
-        // put the brakes on if there is no blocking output running
-        if (!IsBlockingOutputModuleReady()) {
-            usleep(10000);
-        }
-    }
-}
+    endlessloop:
 
-void Synth::Update()
-{
     // TODO - we need something to do the job of the ChannelHandler
     // and pass commands on to the modules
 	//m_CH.UpdateDataNow();
 
-	for(map<int,SpiralModule*>::iterator i=deviceMap.begin();
-            i!=deviceMap.end(); i++) {
-
-        #ifdef DEBUG_MODULES
-            cerr << "Updating channelhandler of Module " << i->second->moduleID << endl;
-		#endif
+	for(list<SpiralModule*>::iterator module = moduleList.begin();
+            module != moduleList.end(); module++) {
 
         // TODO - we need something to do the job of the ChannelHandler
         // and pass commands on to the modules
-		//i->second->UpdateChannelHandler();
+		//module->UpdateChannelHandler();
 
-		#ifdef DEBUG_MODULES
-            cerr << "Finished updating" << endl;
-		#endif
-
-		// If this is an audio device see if we always need to ProcessAudio here
-		if (i->second->IsAudioDriver()) {
-			AudioDriver *driver = ((AudioDriver *)i->second);
+		if ((*module)->IsAudioDriver()) {
+            cerr << "IsAudioDriver" << endl;
+			AudioDriver *driver = ((AudioDriver *)(*module));
 			if (driver->ProcessType() == AudioDriver::ALWAYS) {
 				driver->ProcessAudio();
 			}
@@ -92,37 +72,34 @@ void Synth::Update()
 		// run any commands we've received from the Control Panel
         // (formerly from the GUI)
 		/*
-        i->second->ExecuteCommands();
+        (*module)->ExecuteCommands();
         */
 
         // SpiralSynth used a graph-sort here to determine the execution
         // order and thus remove latency.
 
-		if ((i != deviceMap.end())) {
-
-			#ifdef DEBUG_MODULES
-                cerr << "Executing Module " << i->second->moduleID << endl;
-			#endif
-
-			i->second->Execute();
-			// If this is an audio device see if we need to ProcessAudio here
-			if (i->second->IsAudioDriver()) {
-				AudioDriver *driver = ((AudioDriver *)i->second);
+		if ((module != moduleList.end())) {
+			(*module)->Execute();
+			if ((*module)->IsAudioDriver()) {
+				AudioDriver *driver = ((AudioDriver *)(*module));
 				if (driver->ProcessType() == AudioDriver::MANUAL) {
 					driver->ProcessAudio();
 				}
 			}
-
-			#ifdef DEBUG_MODULES
-                cerr << "Finished executing" << endl;
-			#endif
 		}
 	}
+    // put the brakes on if there is no blocking output running
+    if (!IsBlockingOutputModuleReady()) {
+        usleep(10000);
+    }
+
+    goto endlessloop;
 }
 
 void Synth::addModule(SpiralModule* module)
 {
     module->SetParent((void*)this);
+    moduleList.push_back(module);
     /*
     if (module->IsAudioDriver()) {
         AudioDriver *driver = ((AudioDriver*)module);

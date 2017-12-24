@@ -102,16 +102,14 @@ class SpiralModule {
             cb_Blocking = s;
         }
 
-        void SetParent(void *s)
-        {
+        void SetParent(void *s) {
             m_Parent = s;
         }
 
         // is the Module connected to an external device (oss/alsa/jack)
         bool m_IsTerminal;
 
-        virtual bool IsAudioDriver()
-        {
+        virtual bool IsAudioDriver() {
             return false;
         }
 
