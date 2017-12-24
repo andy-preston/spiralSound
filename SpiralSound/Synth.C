@@ -35,17 +35,14 @@ bool Synth::m_BlockingOutputModuleIsReady = false;
 
 //////////////////////////////////////////////////////////
 
-Synth::Synth(SpiralInfo *info) {
+Synth::Synth(SpiralInfo *info)
+{
     spiralInfo = info;
 }
-
-//////////////////////////////////////////////////////////
 
 Synth::~Synth()
 {
 }
-
-//////////////////////////////////////////////////////////
 
 void Synth::run()
 {
@@ -63,7 +60,6 @@ void Synth::run()
 		//module->UpdateChannelHandler();
 
 		if ((*module)->IsAudioDriver()) {
-            cerr << "IsAudioDriver" << endl;
 			AudioDriver *driver = ((AudioDriver *)(*module));
 			if (driver->ProcessType() == AudioDriver::ALWAYS) {
 				driver->ProcessAudio();
