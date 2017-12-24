@@ -6,9 +6,9 @@
 
 CC		=	gcc
 CXX		=	g++
+INCPATH	=   /usr/include/c++/4.8/
 CFLAGS	=
 CXXFLAGS=
-INCPATH	=   /usr/include/c++/4.8/
 LINK	=	g++
 LFLAGS	=
 LIBS	=   -lm
@@ -47,22 +47,13 @@ TARGET = \
 
 ####### Implicit rules
 
-.SUFFIXES: .cpp .cxx .cc .C .c
-
-.cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
-
-.cxx.o:
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
-
-.cc.o:
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
+.SUFFIXES: .C .c
 
 .C.o:
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) -I $(INCPATH) -o $@ $<
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(INCPATH) -o $@ $<
+	$(CC) -c $(CFLAGS) -I $(INCPATH) -o $@ $<
 
 ####### Build rules
 
