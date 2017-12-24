@@ -34,22 +34,24 @@
 
 using namespace std;
 
+/* TODO: are these rubbish?
 static const int IN_FREQ  = 0;
-static const int IN_PW    = 1;
+static const int IN_PW = 1;
 static const int IN_SHLEN = 2;
-
 static const int OUT_MAIN = 0;
+*/
 
 OSSClient* OSSClient::m_Singleton = NULL;
-int OutputModule::m_RefCount=0;
-int OutputModule::m_NoExecuted=0;
-OutputModule::Mode OutputModule::m_Mode=NO_MODE;
+int OutputModule::m_RefCount = 0;
+int OutputModule::m_NoExecuted = 0;
+OutputModule::Mode OutputModule::m_Mode = NO_MODE;
 
-#define CHECK_AND_REPORT_ERROR if (result<0) { \
-									perror("Sound device did not accept settings"); \
-									m_OutputOk=false; \
-									return false;     \
-								}
+#define CHECK_AND_REPORT_ERROR \
+    if (result < 0) { \
+		perror("Sound device did not accept settings"); \
+		m_OutputOk = false; \
+		return false;     \
+	}
 
 
 OutputModule::OutputModule(SpiralInfo* info) :
@@ -84,7 +86,7 @@ OutputModule::~OutputModule()
 
 void OutputModule::Execute()
 {
-    if (m_Mode==NO_MODE && m_RefCount==1) {
+    if (m_Mode == NO_MODE && m_RefCount == 1) {
 		if (OSSClient::Get()->OpenWrite()) {
 			cb_Blocking(m_Parent, true);
 			m_Mode = OUTPUT;
@@ -92,13 +94,12 @@ void OutputModule::Execute()
 		}
 	}
 
-	if (m_Mode==OUTPUT || m_Mode==DUPLEX)
-	{
-		OSSClient::Get()->SendStereo(GetInput(0),GetInput(1));
+	if (m_Mode == OUTPUT || m_Mode == DUPLEX) {
+		OSSClient::Get()->SendStereo(GetInput(0), GetInput(1));
 	}
-
-	if (m_Mode==INPUT || m_Mode==DUPLEX)
-           OSSClient::Get()->GetStereo(GetOutputBuf(0),GetOutputBuf(1));
+	if (m_Mode==INPUT || m_Mode==DUPLEX) {
+        OSSClient::Get()->GetStereo(GetOutputBuf(0), GetOutputBuf(1));
+    }
 }
 
 /*
@@ -234,19 +235,20 @@ void OSSClient::Play()
     int BufferToSend=!m_WriteBufferNum;
 
     #if __BYTE_ORDER == BIG_ENDIAN
-    for (int n=0; n<spiralInfo->BUFSIZE*m_Channels; n++)
-    {
-		m_Buffer[BufferToSend][n]=(short)((m_Buffer[BufferToSend][n]<<8)&0xff00)|
-		                                 ((m_Buffer[BufferToSend][n]>>8)&0xff);
-    }
+        for (int n = 0; n < spiralInfo->BUFSIZE * m_Channels; n++) {
+            m_Buffer[BufferToSend][n] =
+                (short)
+                    ((m_Buffer[BufferToSend][n] << 8) & 0xff00) |
+		            ((m_Buffer[BufferToSend][n] >> 8) & 0xff);
+        }
     #endif
-	if (m_OutputOk)
-	{
-		write(m_Dspfd,m_Buffer[BufferToSend],m_BufSizeBytes);
+
+	if (m_OutputOk) {
+		write(m_Dspfd, m_Buffer[BufferToSend], m_BufSizeBytes);
 	}
 
-	memset(m_Buffer[BufferToSend],0,m_BufSizeBytes);
-	m_WriteBufferNum=BufferToSend;
+	memset(m_Buffer[BufferToSend], 0, m_BufSizeBytes);
+	m_WriteBufferNum = BufferToSend;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -255,13 +257,17 @@ void OSSClient::GetStereo(Sample *ldata,Sample *rdata)
 {
 	if (m_Channels!=2) return;
 
-	int on=0;
+	int on = 0;
 	for (int n=0; n<spiralInfo->BUFSIZE; n++)
 	{
 		// stereo channels - interleave
-		if (ldata) ldata->Set(n,(m_InBuffer[m_ReadBufferNum][on]*m_Amp)/(float)SHRT_MAX);
+		if (ldata) {
+            ldata->Set(n, (m_InBuffer[m_ReadBufferNum][on] * m_Amp) / (float)SHRT_MAX);
+        }
 		on++;
-		if (rdata) rdata->Set(n,(m_InBuffer[m_ReadBufferNum][on]*m_Amp)/(float)SHRT_MAX);
+		if (rdata) {
+            rdata->Set(n, (m_InBuffer[m_ReadBufferNum][on] * m_Amp) / (float)SHRT_MAX);
+        }
 		on++;
 	}
 }
@@ -272,27 +278,26 @@ void OSSClient::Read()
 {
     int BufferToRead=!m_ReadBufferNum;
 
-	if (m_OutputOk)
-		read(m_Dspfd,m_InBuffer[BufferToRead],m_BufSizeBytes);
-
-    #if __BYTE_ORDER == BIG_ENDIAN
-    for (int n=0; n<spiralInfo->BUFSIZE*m_Channels; n++)
-    {
-		m_InBuffer[BufferToRead][n]=(short)((m_InBuffer[BufferToRead][n]<<8)&0xff00)|
-		                                   ((m_InBuffer[BufferToRead][n]>>8)&0xff);
+	if (m_OutputOk) {
+        read(m_Dspfd, m_InBuffer[BufferToRead], m_BufSizeBytes);
     }
+    #if __BYTE_ORDER == BIG_ENDIAN
+        for (int n = 0; n < spiralInfo->BUFSIZE * m_Channels; n++) {
+            m_InBuffer[BufferToRead][n] =
+                (short)
+                    ((m_InBuffer[BufferToRead][n] << 8) & 0xff00) |
+		            ((m_InBuffer[BufferToRead][n] >> 8) & 0xff);
+        }
     #endif
-
-	m_ReadBufferNum=BufferToRead;
+	m_ReadBufferNum = BufferToRead;
 }
 
 //////////////////////////////////////////////////////////////////////
 
 bool OSSClient::Close()
 {
-	cerr<<"Closing dsp output"<<endl;
+	cerr << "Closing dsp output" << endl;
 	close(m_Dspfd);
-
 	return true;
 }
 
@@ -301,62 +306,54 @@ bool OSSClient::Close()
 bool OSSClient::OpenWrite()
 {
 	int result,val;
-	cerr<<"Opening dsp output"<<endl;
-
-	m_Dspfd = open(spiralInfo->OUTPUTFILE.c_str(),O_WRONLY);
-	if(m_Dspfd<0)
-	{
-		fprintf(stderr,"Can't open audio driver for writing.\n");
-		m_OutputOk=false;
+	cerr << "Opening dsp output" << endl;
+	m_Dspfd = open(spiralInfo->OUTPUTFILE.c_str(), O_WRONLY);
+	if (m_Dspfd < 0) {
+        cerr << "Can't open audio driver for writing." << endl;
+		m_OutputOk = false;
 		return false;
 	}
-
-	result = ioctl(m_Dspfd,SNDCTL_DSP_RESET,NULL);
-
+	result = ioctl(m_Dspfd, SNDCTL_DSP_RESET, NULL);
 	CHECK_AND_REPORT_ERROR;
-
-	short fgmtsize=0;
-	int numfgmts=spiralInfo->FRAGCOUNT;
-	if (spiralInfo->FRAGCOUNT==-1) numfgmts=0x7fff;
-
-	for (int i=0; i<32; i++)
-	{
-		if ((spiralInfo->FRAGSIZE)==(1<<i))
-		{
+	short fgmtsize = 0;
+	int numfgmts = spiralInfo->FRAGCOUNT;
+	if (spiralInfo->FRAGCOUNT == -1) {
+        numfgmts = 0x7fff;
+    }
+	for (int i=0; i<32; i++){
+		if ((spiralInfo->FRAGSIZE) == (1 << i)) {
 			fgmtsize=i;
 			break;
 		}
 	}
-
-	if (fgmtsize==0)
-	{
-		cerr<<"Fragment size ["<<spiralInfo->FRAGSIZE<<"] must be power of two!"<<endl;
-		fgmtsize=256;
+	if (fgmtsize == 0) {
+		cerr << "Fragment size ["
+            << spiralInfo->FRAGSIZE << "] must be power of two!" << endl;
+		fgmtsize = 256;
 	}
+	numfgmts = numfgmts << 16;
 
-	numfgmts=numfgmts<<16;
-	val=numfgmts|(int)fgmtsize;
-	result=ioctl(m_Dspfd, SNDCTL_DSP_SETFRAGMENT, &val);
+	val = numfgmts | (int)fgmtsize;
+	result = ioctl(m_Dspfd, SNDCTL_DSP_SETFRAGMENT, &val);
 	CHECK_AND_REPORT_ERROR;
 
-	val = 1;
+    val = 1;
 	result = ioctl(m_Dspfd, SOUND_PCM_WRITE_CHANNELS, &val);
 	CHECK_AND_REPORT_ERROR;
 
-	val = AFMT_S16_LE;
-	result = ioctl(m_Dspfd,SNDCTL_DSP_SETFMT,&val);
+    val = AFMT_S16_LE;
+	result = ioctl(m_Dspfd, SNDCTL_DSP_SETFMT, &val);
 	CHECK_AND_REPORT_ERROR;
 
-	if (m_Channels==2) val=1;
-	else val=0;
-	result = ioctl(m_Dspfd,SNDCTL_DSP_STEREO,&val);
+    val = (m_Channels == 2) ? 1 : 0;
+	result = ioctl(m_Dspfd, SNDCTL_DSP_STEREO, &val);
 	CHECK_AND_REPORT_ERROR;
 
 	val = spiralInfo->SAMPLERATE;
-	result = ioctl(m_Dspfd,SNDCTL_DSP_SPEED,&val);
+	result = ioctl(m_Dspfd, SNDCTL_DSP_SPEED, &val);
 	CHECK_AND_REPORT_ERROR;
 
-	m_OutputOk=true;
+	m_OutputOk = true;
 	return true;
 }
 
