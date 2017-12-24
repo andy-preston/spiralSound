@@ -60,10 +60,7 @@ void Synth::run()
 		//module->UpdateChannelHandler();
 
 		if ((*module)->IsAudioDriver()) {
-			AudioDriver *driver = ((AudioDriver *)(*module));
-			if (driver->ProcessType() == AudioDriver::ALWAYS) {
-				driver->ProcessAudio();
-			}
+			((AudioDriver *)(*module))->ProcessAudio();
 		}
 		// run any commands we've received from the Control Panel
         // (formerly from the GUI)
@@ -76,12 +73,6 @@ void Synth::run()
 
 		if ((module != moduleList.end())) {
 			(*module)->Execute();
-			if ((*module)->IsAudioDriver()) {
-				AudioDriver *driver = ((AudioDriver *)(*module));
-				if (driver->ProcessType() == AudioDriver::MANUAL) {
-					driver->ProcessAudio();
-				}
-			}
 		}
 	}
     // put the brakes on if there is no blocking output running

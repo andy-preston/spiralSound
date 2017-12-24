@@ -1,7 +1,3 @@
-#############################################################################
-# Makefile for building SpiralSound demo synth
-#############################################################################
-
 ####### Compiler, tools and options
 
 CC		=	gcc
@@ -11,7 +7,7 @@ CFLAGS	=
 CXXFLAGS=
 LINK	=	g++
 LFLAGS	=
-LIBS	=   -lm
+LIBS	=   -lao -lm
 
 ####### Files
 
