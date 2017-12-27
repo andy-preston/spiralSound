@@ -35,13 +35,10 @@ class SpiralInfo {
         SpiralInfo();
         ~SpiralInfo() {}
         int BUFSIZE;
-        int FRAGSIZE;
-        int FRAGCOUNT;
         int SAMPLERATE;
         long MAXSAMPLE;
         float VALUECONV;
         int FILTERGRAN;
-        string OUTPUTFILE;
         static SpiralInfo* Get();
     private:
         static SpiralInfo *m_SpiralInfo;

@@ -37,7 +37,6 @@ int main(int argc, char **argv)
 
     srand(time(NULL));
     info = new SpiralInfo();
-    info->OUTPUTFILE = "/dev/dsp";
 
     cout << "create synth\n";
 	synth = new Synth(info);

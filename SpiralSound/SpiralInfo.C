@@ -39,11 +39,6 @@ SpiralInfo* SpiralInfo::Get() {
 SpiralInfo::SpiralInfo()
 {
     BUFSIZE = 512;
-
-    /* obsolete - REMOVE SOON  */
-    FRAGSIZE = 256;
-    FRAGCOUNT = 8;
-
     SAMPLERATE = 44100;
     MAXSAMPLE = 32767;
     VALUECONV = 1.0f / MAXSAMPLE;

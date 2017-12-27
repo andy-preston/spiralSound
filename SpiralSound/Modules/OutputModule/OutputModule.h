@@ -18,6 +18,7 @@
 
 #include "../SpiralModule.h"
 #include "../../RiffWav.h"
+#include <ao/ao.h>
 
 #ifndef OUTPUT_MODULE
 #define OUTPUT_MODULE
@@ -25,24 +26,14 @@
 class OutputModule : public AudioDriver
 {
     public:
-	    enum Mode {NO_MODE, OUTPUT, CLOSED};
  	    OutputModule(SpiralInfo* info);
 	    virtual ~OutputModule();
 	    //virtual PluginInfo& Initialise(const HostInfo *Host);
 	    virtual void Execute();
-	    // virtual void ExecuteCommands();
-        virtual void ProcessAudio();
-        Mode GetMode() { return m_Mode; }
     private:
-	    static int m_RefCount;
-	    static int m_NoExecuted;
-	    static Mode m_Mode;
-        bool m_NotifyOpenOut;
-	    bool m_CheckedAlready;
-
+        int clipData(float t);
         // libao stuffs
         ao_device *aoDevice;
-        ao_sample_format aoSampleFormat;
         char *aoBuffer;
         int aoBufferSize;
 };
