@@ -1,7 +1,8 @@
 SpiralSound
 ===========
 
-Last changed 15 October 2016 (Last time I was typing here it was 11-March-2004)
+Last changed 27 December 2017
+(Last time I was typing here it was 11-March-2004)
 
 SpiralSound is open source software, distributed under the General
 Public License (GPL). See the file COPYING.
