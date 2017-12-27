@@ -59,7 +59,7 @@ void SpiralModule::UpdateChannelHandler()
 
 void SpiralModule::addOutput(const char* name, Sample::SampleType type)
 {
-	Sample* sample = new Sample(spiralInfo->BUFSIZE);
+	Sample* sample = new Sample(spiralInfo->bufferSize);
     OutputPort* port = new OutputPort(name, type, sample);
 	m_Output.push_back(port);
 }

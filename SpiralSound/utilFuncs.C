@@ -16,21 +16,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef SpiralINFO
-#define SpiralINFO
-
-using namespace std;
-
-class SpiralInfo {
-    public:
-        SpiralInfo();
-        int bufferSize;
-        int sampleRate;
-        /*
-        long MAXSAMPLE;
-        float VALUECONV;
-        int FILTERGRAN;
-        */
-};
-
-#endif
+float RandFloat (float s, float e) {
+      return s + ((rand() % 10000 / 10000.0) * (e - s));
+}

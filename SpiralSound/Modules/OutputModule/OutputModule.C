@@ -21,17 +21,6 @@
 #define _ISOC99_SOURCE	1
 #include  <math.h>
 
-// TODO: prune these includes!
-#include <sys/types.h>
-#include <stdio.h>
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <limits.h>
-#include <sys/soundcard.h>
-#include <sys/ioctl.h>
-#include <limits.h>
-
 #include "OutputModule.h"
 
 using namespace std;
@@ -46,21 +35,18 @@ static const int OUT_MAIN = 0;
 OutputModule::OutputModule(SpiralInfo* info) : AudioDriver(info)
 {
     ao_sample_format aoSampleFormat;
-    cerr << "OutputModule::OutputModule" << endl;
     memset(&aoSampleFormat, 0, sizeof(aoSampleFormat));
+    // Everything is going to be 16 bit stereo, little endian
+    aoSampleFormat.byte_format = AO_FMT_LITTLE;
     aoSampleFormat.bits = 16;
     aoSampleFormat.channels = 2;
-    aoSampleFormat.rate = 44100;
-    aoSampleFormat.byte_format = AO_FMT_LITTLE;
-    aoBufferSize = aoSampleFormat.bits / 8
-        * aoSampleFormat.channels
-        * aoSampleFormat.rate;
+    // Sample Rate is dictated by SpiralInfo
+    aoSampleFormat.rate = info->sampleRate;
+    aoBufferSize = aoSampleFormat.bits / 8 * aoSampleFormat.channels
+        * spiralInfo->bufferSize;
     aoBuffer = (char *)calloc(aoBufferSize, sizeof(char));
-    cerr << "aoBuffer allocated" << endl;
     ao_initialize();
-    cerr << "ao_initialize done" << endl;
     aoDevice = ao_open_live(ao_default_driver_id(), &aoSampleFormat, NULL);
-    cerr << "aoDevice obtained" << endl;
     if (aoDevice == NULL) {
         cerr << "Error opening libao device" << endl;
         return;
@@ -68,15 +54,16 @@ OutputModule::OutputModule(SpiralInfo* info) : AudioDriver(info)
 	m_IsTerminal = true; // we are an output.
 	addInput("Left Out", Sample::AUDIO);
 	addInput("Right Out", Sample::AUDIO);
-    // TODO: we might care about cb_Bloking in the future
+    // TODO: we might care about cb_Blocking in the future
     // but it segfaults right now
-    //cb_Blocking(m_Parent, true);
-    cerr << "OutputModule::OutputModule done" << endl;
+    // cb_Blocking(m_Parent, true);
 }
 
 OutputModule::~OutputModule()
 {
-	cb_Blocking(m_Parent, false);
+    // TODO: we might care about cb_Blocking in the future
+    // but it segfaults right now
+	//cb_Blocking(m_Parent, false);
     ao_close(aoDevice);
 	ao_shutdown();
 }
@@ -85,18 +72,10 @@ void OutputModule::Execute()
 {
     const Sample *ldata, *rdata;
     int bufIdx, n, samp;
-
-    cerr << "OutputModule::Execute" << endl;
-
     ldata = GetInput(0);
     rdata = GetInput(1);
-
-        /////////////////////////////////////////////////////////////////////
-        // TODO: What if the input buffer is too small or the output buffer
-        // is too big and all that shizzle
-        /////////////////////////////////////////////////////////////////////
     bufIdx = 0;
-    for (n = 0; n < spiralInfo->BUFSIZE; n++) {
+    for (n = 0; n < spiralInfo->bufferSize; n++) {
         // stereo channels - interleave
         samp = clipData((*ldata)[n]);
         aoBuffer[bufIdx++] = samp & 0xff;
@@ -104,15 +83,8 @@ void OutputModule::Execute()
         samp = clipData((*rdata)[n]);
         aoBuffer[bufIdx++] = samp & 0xff;
         aoBuffer[bufIdx++] = (samp >> 8) & 0xff;
-        if (bufIdx == aoBufferSize) {
-            ao_play(aoDevice, aoBuffer, aoBufferSize);
-            bufIdx = 0;
-        }
     }
-    if (bufIdx > 0) {
-        ao_play(aoDevice, aoBuffer, bufIdx);
-        bufIdx = 0;
-    }
+    ao_play(aoDevice, aoBuffer, aoBufferSize);
 }
 
 int OutputModule::clipData(float t) {

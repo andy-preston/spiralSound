@@ -28,7 +28,6 @@ using namespace std;
 static const int IN_FREQ  = 0;
 static const int IN_PW = 1;
 static const int IN_SHLEN = 2;
-
 static const int OUT_MAIN = 0;
 
 OscillatorModule::OscillatorModule(const SpiralInfo *info)
@@ -74,7 +73,7 @@ void OscillatorModule::Execute()
 	int samplelen, PW;
 	switch (m_Type) {
 	    case SQUARE:
-		    for (int n=0; n<spiralInfo->BUFSIZE; n++) {
+            for (int n=0; n<spiralInfo->bufferSize; n++) {
                 Freq = InputExists(0) ? GetInputPitch(0,n) : 110;
                 Freq *= m_FineFreq;
                 if (m_Octave > 0) {
@@ -83,7 +82,7 @@ void OscillatorModule::Execute()
                 if (m_Octave<0) {
                     Freq /= 1 << (-m_Octave);
                 }
-                CycleLen = spiralInfo->SAMPLERATE / Freq;
+                CycleLen = spiralInfo->sampleRate / Freq;
                 PW = (int)((m_PulseWidth + GetInput(IN_PW, n) * m_ModAmount) * CycleLen);
                 // calculate square wave pattern
                 m_CyclePos++;
@@ -98,7 +97,7 @@ void OscillatorModule::Execute()
             }
             break;
         case SAW:
-            for (int n=0; n<spiralInfo->BUFSIZE; n++) {
+            for (int n=0; n<spiralInfo->bufferSize; n++) {
                 Freq = InputExists(0) ? GetInputPitch(0,n) : 110;
                 Freq *= m_FineFreq;
                 if (m_Octave > 0) {
@@ -107,7 +106,7 @@ void OscillatorModule::Execute()
                 if (m_Octave<0) {
                     Freq /= 1 << (-m_Octave);
                 }
-                CycleLen = spiralInfo->SAMPLERATE / Freq;
+                CycleLen = spiralInfo->sampleRate / Freq;
                 PW = (int)((m_PulseWidth + GetInput(IN_PW, n) * m_ModAmount) * CycleLen);
                 // get normailise position between cycle
                 m_CyclePos++;
@@ -124,10 +123,13 @@ void OscillatorModule::Execute()
             }
             break;
         case NOISE:
-		    for (int n = 0; n < spiralInfo->BUFSIZE; n++) {
+            for (int n = 0; n < spiralInfo->bufferSize; n++) {
                 m_CyclePos++;
                 //modulate the sample & hold length
-                samplelen = (int)((m_SHLen + GetInput(IN_SHLEN, n) * m_ModAmount) * spiralInfo->SAMPLERATE);
+                samplelen = (int)(
+                    (m_SHLen + GetInput(IN_SHLEN, n) * m_ModAmount)
+                        * spiralInfo->sampleRate
+                );
                 // do sample & hold on the noise
                 if (m_CyclePos>samplelen) {
                     m_Noisev = (short)((rand() % SHRT_MAX * 2) - SHRT_MAX);
