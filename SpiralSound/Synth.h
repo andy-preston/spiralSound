@@ -19,7 +19,6 @@
 #ifndef SPIRALSOUND
 #define SPIRALSOUND
 
-#include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <list>
@@ -39,8 +38,8 @@ class Synth
         bool IsBlockingOutputModuleReady() {
             return m_BlockingOutputModuleIsReady;
         }
-        void connect(SpiralModule* sourceMod, string sourcePort,
-            SpiralModule* destMod, string destPort);
+        void connect(SpiralModule* sourceMod, const char *sourcePort,
+            SpiralModule* destMod, const char *destPort);
     private:
         SpiralInfo *spiralInfo;
         std::list<SpiralModule*> moduleList;

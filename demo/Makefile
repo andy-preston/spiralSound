@@ -4,7 +4,7 @@ CC		=	gcc
 CXX		=	g++
 INCPATH	=   /usr/include/c++/4.8/
 CFLAGS	=
-CXXFLAGS=
+CXXFLAGS=	-funsigned-char
 LINK	=	g++
 LFLAGS	=
 LIBS	=   -lao -lm
@@ -17,6 +17,7 @@ HEADERS = \
 	../SpiralSound/Sample.h \
 	../SpiralSound/RiffWav.h \
 	../SpiralSound/Modules/SpiralModule.h \
+	../SpiralSound/Modules/MidiModule/MidiModule.h \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.h \
 	../SpiralSound/Modules/FilterModule/FilterModule.h \
 	../SpiralSound/Modules/FilterModule/iir_filter.h \
@@ -29,6 +30,7 @@ SOURCES = \
 	../SpiralSound/SpiralInfo.C \
 	../SpiralSound/Sample.C \
 	../SpiralSound/Modules/SpiralModule.C \
+	../SpiralSound/Modules/MidiModule/MidiModule.C \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.C \
 	../SpiralSound/Modules/FilterModule/FilterModule.C \
 	../SpiralSound/Modules/FilterModule/iir_filter.C \
@@ -41,6 +43,7 @@ OBJECTS = \
 	../SpiralSound/SpiralInfo.o \
 	../SpiralSound/Sample.o \
 	../SpiralSound/Modules/SpiralModule.o \
+	../SpiralSound/Modules/MidiModule/MidiModule.o \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.o \
 	../SpiralSound/Modules/FilterModule/FilterModule.o \
 	../SpiralSound/Modules/FilterModule/iir_filter.o \
@@ -93,6 +96,12 @@ main.o : \
 ../SpiralSound/Modules/SpiralModule.o: \
 	../SpiralSound/Modules/SpiralModule.C \
 	../SpiralSound/Modules/SpiralModule.h \
+	../SpiralSound/SpiralInfo.h \
+	../SpiralSound/Sample.h
+
+../SpiralSound/Modules/MidiModule/MidiModule.o: \
+	../SpiralSound/Modules/MidiModule/MidiModule.C \
+	../SpiralSound/Modules/MidiModule/MidiModule.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h
 

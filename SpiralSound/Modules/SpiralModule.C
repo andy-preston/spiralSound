@@ -16,8 +16,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <sstream>
-#include <stdexcept>
 #include "SpiralModule.h"
 
 using namespace std;
@@ -70,7 +68,7 @@ void SpiralModule::addInput(const char* name, Sample::SampleType type)
     m_Input.push_back(port);
 }
 
-void SpiralModule::GetOutput(string name, Sample **s)
+void SpiralModule::GetOutput(const char *name, Sample **s)
 {
     for(std::vector<OutputPort*>::iterator outputPort = m_Output.begin();
             outputPort != m_Output.end(); ++outputPort) {
@@ -79,10 +77,11 @@ void SpiralModule::GetOutput(string name, Sample **s)
             return;
         }
     }
-    throw std::invalid_argument("Can't find output: " + name );
+    cerr << "Can't find output: " << name << endl;
+    exit(1);
 }
 
-void SpiralModule::SetInput(string name, const Sample *s)
+void SpiralModule::SetInput(const char *name, const Sample *s)
 {
     for(std::vector<InputPort*>::iterator inputPort = m_Input.begin();
             inputPort != m_Input.end(); ++inputPort) {
@@ -91,7 +90,8 @@ void SpiralModule::SetInput(string name, const Sample *s)
             return;
         }
     }
-    throw std::invalid_argument("Can't find input: " + name );
+    cerr << "Can't find input: " << name << endl;
+    exit(1);
 }
 
 void SpiralModule::addIntControl(const char* name, int* data)

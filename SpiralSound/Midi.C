@@ -1,5 +1,8 @@
 /*
- *  Copyleft (C) 2000 David Griffiths <dave@pawfal.org>
+ * SpiralSound MIDI support
+ *     - Copyleft (C) 2016 Andy Preston <edgeeffect@gmail.com>
+ * based on SpiralSynthModular
+ *     - Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,8 +17,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/
-
+ */
 #include "Midi.h"
 #include "unistd.h"
 #include "sys/types.h"
@@ -345,9 +347,9 @@ void MidiDevice::OssAddEvent(unsigned char* midi)
 
 void MidiDevice::AlsaClose () {
 
-	//Alsa requires two handles - one for read and one for write, 
+	//Alsa requires two handles - one for read and one for write,
 	//so we make sure too close both here
-	
+
 	snd_seq_close (seq_rhandle);
 	snd_seq_close (seq_whandle);
 }
@@ -355,14 +357,14 @@ void MidiDevice::AlsaClose () {
 void MidiDevice::AlsaCollectEvents () {
      //As Alsa only supports a read or write, we use the read handle here to poll our input
      //for MIDI events
-	
+
      int seq_nfds, l1;
      struct pollfd *pfds;
 
-     //get descriptors count to find out how many events are 
+     //get descriptors count to find out how many events are
      //waiting to be processed
      seq_nfds = snd_seq_poll_descriptors_count(seq_rhandle, POLLIN);
-     
+
      //poll the descriptors to be proccessed and loop through them
      pfds = new struct pollfd[seq_nfds];
      snd_seq_poll_descriptors(seq_rhandle, pfds, seq_nfds, POLLIN);
@@ -420,7 +422,7 @@ void MidiDevice::AlsaSendEvent (int Device, const MidiEvent &Event) {
 	//our MIDI events
 
 	snd_seq_event_t ev;
-	
+
 	snd_seq_ev_clear      (&ev);
   	snd_seq_ev_set_direct (&ev);
 	snd_seq_ev_set_subs   (&ev);
@@ -437,12 +439,12 @@ void MidiDevice::AlsaSendEvent (int Device, const MidiEvent &Event) {
 /*		case MidiEvent::PARAMETER:
                      ev.type = SND_SEQ_EVENT_CONTROLLER;
                      ev.data.control.param = Event.GetNote();
-                     ev.data.control.value = 
+                     ev.data.control.value =
                      break;
 		case MidiEvent::PITCHBEND:
                      ev.type = SND_SEQ_EVENT_PITCHBEND;
                      ev.data.control.param = Event.GetNote();
-                     ev.data.control.value = 
+                     ev.data.control.value =
                      break;*/
                 default:
                      break;
@@ -459,10 +461,10 @@ void MidiDevice::AlsaSendEvent (int Device, const MidiEvent &Event) {
 void MidiDevice::AlsaOpen()
 {
 	int client_id, port_id;
-	
+
 	//Alsa apears to require two handles, one for read and one for write
 	//so we try to open one first for input and then one for output
-	
+
 	//open input handle
 	if (snd_seq_open(&seq_rhandle, "default", SND_SEQ_OPEN_INPUT, 0) < 0)
 	{
@@ -477,13 +479,13 @@ void MidiDevice::AlsaOpen()
 	//try and create our actual input port capable of being written to by MIDI outputs
 	if ((port_id = snd_seq_create_simple_port(seq_rhandle, m_AppName.c_str(),
 		SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE,
-		SND_SEQ_PORT_TYPE_APPLICATION) < 0)) 
+		SND_SEQ_PORT_TYPE_APPLICATION) < 0))
 	{
 		fprintf(stderr, "Error creating input sequencer port.\n");
 	}
 
 	//open output handle
-	if (snd_seq_open(&seq_whandle, "default", SND_SEQ_OPEN_OUTPUT, 0) < 0) 
+	if (snd_seq_open(&seq_whandle, "default", SND_SEQ_OPEN_OUTPUT, 0) < 0)
 	{
 		fprintf(stderr, "Error opening ALSA ouput sequencer.\n");
 		exit(1);
@@ -496,7 +498,7 @@ void MidiDevice::AlsaOpen()
 	//try and create our actual output port capable of being read from by MIDI inputs
 	if ((port_id = snd_seq_create_simple_port(seq_whandle, m_AppName.c_str(),
 		SND_SEQ_PORT_CAP_READ|SND_SEQ_PORT_CAP_SUBS_READ,
-		SND_SEQ_PORT_TYPE_APPLICATION) < 0)) 
+		SND_SEQ_PORT_TYPE_APPLICATION) < 0))
 	{
 		fprintf(stderr, "Error creating output sequencer port.\n");
 	}

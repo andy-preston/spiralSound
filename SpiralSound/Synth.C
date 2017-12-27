@@ -19,10 +19,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <sstream>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -97,8 +93,8 @@ void Synth::addModule(SpiralModule* module)
     */
 }
 
-void Synth::connect(SpiralModule* sourceMod, string sourcePort,
-    SpiralModule* destMod, string destPort)
+void Synth::connect(SpiralModule* sourceMod, const char *sourcePort,
+    SpiralModule* destMod, const char *destPort)
 {
 	Sample *sample=NULL;
 	sourceMod->GetOutput(sourcePort, &sample);

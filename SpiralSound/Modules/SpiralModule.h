@@ -21,8 +21,8 @@
 
 #include <vector>
 #include <map>
-#include <string>
-#include <iostream>
+//#include <string>
+//#include <iostream>
 #include <math.h>
 #include <stdlib.h>
 #include "../SpiralInfo.h"
@@ -33,24 +33,26 @@ static const float MAX_FREQ = 13000;
 class InputPort
 {
     public:
-        InputPort(const char* Name, Sample::SampleType Type, const Sample* Data);
+        InputPort(const char* name, Sample::SampleType type, const Sample* data);
         const Sample* Data;
-        const char* Name;
+        const char *Name;
         Sample::SampleType Type;
 };
 
 class OutputPort {
     public:
-        OutputPort(const char* Name, Sample::SampleType Type, Sample* Data);
+        OutputPort(const char* name, Sample::SampleType type, Sample* data);
         Sample* Data;
-        const char* Name;
+        const char *Name;
         Sample::SampleType Type;
 };
 
+/*
 struct ModuleControl
 {
     char* name;
 };
+*/
 
 class SpiralModule {
     public:
@@ -60,13 +62,6 @@ class SpiralModule {
 
         // execute the audio
 	    virtual void Execute() = 0;
-
-        // run the commands from the Control panel
-        /*
-        virtual void ExecuteCommands()
-        {
-        }
-        */
 
         // stuff here gets saved in filename_files directory
         // you must return true if this feature is used.
@@ -84,22 +79,12 @@ class SpiralModule {
             return spiralInfo;
         }
 
-        void GetOutput(string name, Sample **s);
-        void SetInput(string name, const Sample *s);
+        void GetOutput(const char *name, Sample **s);
+        void SetInput(const char *name, const Sample *s);
 
         const Sample* GetInput(unsigned int n)
         {
             return m_Input[n]->Data;
-        }
-
-        void SetUpdateCallback(void (*s)(void*,bool m))
-        {
-            cb_Update = s;
-        }
-
-        void SetBlockingCallback(void (*s)(void*,bool m))
-        {
-            cb_Blocking = s;
         }
 
         void SetParent(void *s) {
@@ -164,10 +149,9 @@ class SpiralModule {
 
         void addInput(const char* name, Sample::SampleType type);
 
+        // TODO: these 3 will become redundant
         void addIntControl(const char* name, int* data);
-
         void addBoolControl(const char* name, bool* data);
-
         void addFloatControl(const char* name, float* data);
 
         Sample* GetOutputBuf(int n)

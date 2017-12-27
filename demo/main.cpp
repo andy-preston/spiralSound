@@ -25,6 +25,7 @@
 #include <sys/resource.h>
 #include "../SpiralSound/Synth.h"
 #include "../SpiralSound/SpiralInfo.h"
+#include "../SpiralSound/Modules/MidiModule/MidiModule.h"
 #include "../SpiralSound/Modules/OscillatorModule/OscillatorModule.h"
 #include "../SpiralSound/Modules/FilterModule/FilterModule.h"
 #include "../SpiralSound/Modules/LFOModule/LFOModule.h"
