@@ -166,6 +166,8 @@ class SpiralModule {
 
         void addIntControl(const char* name, int* data);
 
+        void addBoolControl(const char* name, bool* data);
+
         void addFloatControl(const char* name, float* data);
 
         Sample* GetOutputBuf(int n)

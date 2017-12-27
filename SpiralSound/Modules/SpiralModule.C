@@ -94,8 +94,12 @@ void SpiralModule::SetInput(string name, const Sample *s)
     throw std::invalid_argument("Can't find input: " + name );
 }
 
-
 void SpiralModule::addIntControl(const char* name, int* data)
+{
+    // TODO
+}
+
+void SpiralModule::addBoolControl(const char* name, bool* data)
 {
     // TODO
 }
