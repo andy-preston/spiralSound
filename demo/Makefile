@@ -18,6 +18,7 @@ HEADERS = \
 	../SpiralSound/RiffWav.h \
 	../SpiralSound/Modules/SpiralModule.h \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.h \
+	../SpiralSound/Modules/FilterModule/FilterModule.h \
 	../SpiralSound/Modules/OutputModule/OutputModule.h
 
 SOURCES = \
@@ -27,6 +28,7 @@ SOURCES = \
 	../SpiralSound/Sample.C \
 	../SpiralSound/Modules/SpiralModule.C \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.C \
+	../SpiralSound/Modules/FilterModule/FilterModule.C \
 	../SpiralSound/Modules/OutputModule/OutputModule.C
 
 OBJECTS = \
@@ -36,6 +38,7 @@ OBJECTS = \
 	../SpiralSound/Sample.o \
 	../SpiralSound/Modules/SpiralModule.o \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.o \
+	../SpiralSound/Modules/FilterModule/FilterModule.o \
 	../SpiralSound/Modules/OutputModule/OutputModule.o
 
 TARGET = \
@@ -90,6 +93,12 @@ main.o : \
 ../SpiralSound/Modules/OscillatorModule/OscillatorModule.o: \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.C \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.h \
+	../SpiralSound/SpiralInfo.h \
+	../SpiralSound/Sample.h
+
+../SpiralSound/Modules/FilterModule/FilterModule.o: \
+	../SpiralSound/Modules/FilterModule/FilterModule.C \
+	../SpiralSound/Modules/FilterModule/FilterModule.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h
 
