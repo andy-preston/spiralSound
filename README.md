@@ -26,25 +26,31 @@ if when you come to do a PULL everything goes kerpooie!
 Dependancies
 ------------
 
-LADSPA plugins  (www.ladspa.org)
+LADSPA plugins  (http://www.ladspa.org)
 
-Sound output can be provided by either OSS or JACK (and therefore alsa).
+The original SpiralSynthModular used LADSPA to provide extra plugins.
+At this stage the LADSPA code hasn't been "converted"
+
+libao (http://www.xiph.org/ao/)
+
+At least in prototype versions of spiralSound, I'm using libao to output
+the sound. This is available in most Linux distributions.
 
 Installing
 ----------
 
-(With such a massive rewrite in progress, your chances of this working are
-minimal at best)
+I can't be asked with all that GNU autotools stuff.
+But as this is more of a construction kit than an application in itself,
+it shouldn't take you that much time to work out which libraries to link
+and where they live.
 
-To build SpiralSound:
-
-./configure
-make
-make install
-spiralsynthmodular
+to compile the demo program cd into the demo directory and run make.
 
 LRDF support for LADSPA plugins
 -------------------------------
+
+(not used in the current version - this section of the readme could end
+up being deleted.)
 
 http://plugin.org.uk/releases/lrdf/
 http://www.redland.opensource.ac.uk/raptor/
@@ -58,6 +64,9 @@ To disable detection of this this, use the configure option:
 Jack support
 ------------
 
+(not used in the current version - this section of the readme could end
+up being deleted.)
+
 http://jackit.sourceforge.net
 
 If you have jack installed on your system, you can use it via the
@@ -68,6 +77,9 @@ To disable detection of jack, use the configure option:
 
 LibSndFile Support
 ------------------
+
+(not used in the current version - this section of the readme could end
+up being deleted.)
 
 http://www.zip.com.au/~erikd/libsndfile/
 
@@ -80,6 +92,9 @@ To disable detection of this, use the configure option:
 
 Setting up your .spiralmodular file
 -----------------------------------
+
+(This info can be added to your own programs - this section of the readme needs
+updating)
 
 This file contains all the setup variables for the program. Thes values can be
 edited with the options window whilst running SSM.
@@ -99,10 +114,8 @@ Samplerate        = 44100       - Sets the samplerate
 Disclaimer
 ----------
 
-No representations are made about the suitability of this software
-for any purpose. This software is provided "as is" without express
-or implied warranty.
+No representations are made about the suitability of this software for any
+purpose. This software is provided "as is" without express or implied warranty.
 (Damage to ears, speakers or buildings are not my fault :))
 
-Andy Preston (Maintainer) - edgeeffect@gmail.com
-Dave Griffiths (Original Author) - dave@pawfal.org
+Andy Preston - edgeeffect@gmail.com
