@@ -99,6 +99,12 @@ main.o : \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h
 
+../SpiralSound/Modules/FilterModule/FilterModule.o: \
+	../SpiralSound/Modules/FilterModule/FilterModule.C \
+	../SpiralSound/Modules/FilterModule/FilterModule.h \
+	../SpiralSound/SpiralInfo.h \
+	../SpiralSound/Sample.h
+
 ../SpiralSound/Modules/FilterModule/iir_filter.o: \
 	../SpiralSound/Modules/FilterModule/iir_filter.C \
 	../SpiralSound/Modules/FilterModule/iir_filter.h \
