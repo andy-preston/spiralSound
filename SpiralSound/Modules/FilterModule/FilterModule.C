@@ -62,8 +62,8 @@ FilterModule::FilterModule(const SpiralInfo *info) : SpiralModule(info)
     iir.coef = (float *) calloc(4 * iir.length + 1 , sizeof(float));
 
 	if (!iir.coef) {
-         printf("Unable to allocate coef array, exiting\n");
-         exit(1);
+        cerr << "Unable to allocate coef array" << endl;
+        exit(1);
     }
 
     addInput("Input", Sample::AUDIO);

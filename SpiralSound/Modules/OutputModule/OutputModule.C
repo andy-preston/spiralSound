@@ -49,7 +49,7 @@ OutputModule::OutputModule(SpiralInfo* info) : AudioDriver(info)
     aoDevice = ao_open_live(ao_default_driver_id(), &aoSampleFormat, NULL);
     if (aoDevice == NULL) {
         cerr << "Error opening libao device" << endl;
-        return;
+        exit(1);
     }
 	m_IsTerminal = true; // we are an output.
 	addInput("Left Out", Sample::AUDIO);
