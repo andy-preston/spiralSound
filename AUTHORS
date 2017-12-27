@@ -1,4 +1,4 @@
-In no particular order:
+Original SpiralSynthModular authors In no particular order:
 
 Yves Usson did lots of early work on the GUI, and provided the excellent
 Fl_Knob widget. Also authored plugins such as the WaveShaper.
@@ -40,6 +40,3 @@ Paul Davis helped with nasty threading issues and unwittingly provided code
 from his ardour project.
 
 Dave Griffiths started the thing going.
-
-Let me know (dave) if any of this is wrong, or you have been missed off - it was
-quite difficult to gather all the information :)
