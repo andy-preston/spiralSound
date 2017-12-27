@@ -27,6 +27,7 @@
 #include "../SpiralSound/SpiralInfo.h"
 #include "../SpiralSound/Modules/OscillatorModule/OscillatorModule.h"
 #include "../SpiralSound/Modules/FilterModule/FilterModule.h"
+#include "../SpiralSound/Modules/LFOModule/LFOModule.h"
 #include "../SpiralSound/Modules/OutputModule/OutputModule.h"
 
 int main(int argc, char **argv)
@@ -35,6 +36,7 @@ int main(int argc, char **argv)
     Synth *synth;
     OscillatorModule *oscillator;
     FilterModule *filter;
+    LFOModule *lfo;
     OutputModule *output;
 
     srand(time(NULL));
@@ -51,12 +53,17 @@ int main(int argc, char **argv)
     filter = new FilterModule(info);
     synth->addModule(filter);
 
+    cout << "add LFO\n";
+    lfo = new LFOModule(info);
+    synth->addModule(lfo);
+
     cout << "add output\n";
     output = new OutputModule(info);
     synth->addModule(output);
 
     cout << "connect\n";
     synth->connect(oscillator, "Output", filter, "Input");
+    synth->connect(lfo, "Output", filter, "Cutoff");
     synth->connect(filter, "Output", output, "Left Out");
     synth->connect(filter, "Output", output, "Right Out");
 

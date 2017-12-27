@@ -20,6 +20,7 @@ HEADERS = \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.h \
 	../SpiralSound/Modules/FilterModule/FilterModule.h \
 	../SpiralSound/Modules/FilterModule/iir_filter.h \
+	../SpiralSound/Modules/LFOModule/LFOModule.h \
 	../SpiralSound/Modules/OutputModule/OutputModule.h
 
 SOURCES = \
@@ -31,6 +32,7 @@ SOURCES = \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.C \
 	../SpiralSound/Modules/FilterModule/FilterModule.C \
 	../SpiralSound/Modules/FilterModule/iir_filter.C \
+	../SpiralSound/Modules/LFOModule/LFOModule.C \
 	../SpiralSound/Modules/OutputModule/OutputModule.C
 
 OBJECTS = \
@@ -42,6 +44,7 @@ OBJECTS = \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.o \
 	../SpiralSound/Modules/FilterModule/FilterModule.o \
 	../SpiralSound/Modules/FilterModule/iir_filter.o \
+	../SpiralSound/Modules/LFOModule/LFOModule.o \
 	../SpiralSound/Modules/OutputModule/OutputModule.o
 
 TARGET = \
@@ -107,7 +110,11 @@ main.o : \
 
 ../SpiralSound/Modules/FilterModule/iir_filter.o: \
 	../SpiralSound/Modules/FilterModule/iir_filter.C \
-	../SpiralSound/Modules/FilterModule/iir_filter.h \
+	../SpiralSound/Modules/FilterModule/iir_filter.h
+
+../SpiralSound/Modules/LFOModule/LFOModule.o: \
+	../SpiralSound/Modules/LFOModule/LFOModule.C \
+	../SpiralSound/Modules/LFOModule/LFOModule.h \
 	../SpiralSound/SpiralInfo.h \
 	../SpiralSound/Sample.h
 
