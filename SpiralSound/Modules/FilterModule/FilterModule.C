@@ -68,7 +68,7 @@ FilterModule::FilterModule(const SpiralInfo *info) : SpiralModule(info)
 
     addInput("Input", Sample::AUDIO);
     addInput("Cutoff", Sample::AUDIO);
-    addInput("Emphasis", Sample::AUDIO);
+    addInput("Resonance", Sample::AUDIO);
     addOutput("Output", Sample::AUDIO);
 
 	addFloatControl("Cutoff", &fc);

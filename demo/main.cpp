@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     Synth *synth;
     OscillatorModule *oscillator;
     FilterModule *filter;
-    LFOModule *lfo;
+    LFOModule *lfo1, *lfo2;
     OutputModule *output;
 
     srand(time(NULL));
@@ -53,9 +53,14 @@ int main(int argc, char **argv)
     filter = new FilterModule(info);
     synth->addModule(filter);
 
-    cout << "add LFO\n";
-    lfo = new LFOModule(info);
-    synth->addModule(lfo);
+    cout << "add LFO 1\n";
+    lfo1 = new LFOModule(info);
+    lfo1->m_Freq = 1;
+    synth->addModule(lfo1);
+
+    cout << "add LFO 2\n";
+    lfo2 = new LFOModule(info);
+    synth->addModule(lfo2);
 
     cout << "add output\n";
     output = new OutputModule(info);
@@ -63,7 +68,8 @@ int main(int argc, char **argv)
 
     cout << "connect\n";
     synth->connect(oscillator, "Output", filter, "Input");
-    synth->connect(lfo, "Output", filter, "Cutoff");
+    synth->connect(lfo1, "Output", filter, "Cutoff");
+    synth->connect(lfo2, "Output", filter, "Resonance");
     synth->connect(filter, "Output", output, "Left Out");
     synth->connect(filter, "Output", output, "Right Out");
 

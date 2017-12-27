@@ -1,5 +1,7 @@
-/*  SpiralSound
- *  Copyleft (C) 2002 Andy Preston <edgeeffect@gmail.com>
+/* SpiralSound LFO module
+ *     - Copyleft (C) 2016 Andy Preston <edgeeffect@gmail.com>
+ * based on SpiralSynthModular
+ *     - Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef LFOModule
-#define LFOModule
+#ifndef LFO_MODULE
+#define LFO_MODULE
 
 #include "../SpiralModule.h"
 
@@ -26,18 +28,14 @@ static const int DEFAULT_TABLE_LEN = 1024;
 
 class LFOModule : public SpiralModule {
     public:
-        LFOModule();
+        LFOModule(const SpiralInfo *info);
         virtual ~LFOModule();
-        virtual ModuleInfo &Initialise(const HostInfo *Host);
         virtual void Execute();
-        virtual void Reset();
-        virtual void StreamOut(std::ostream &s);
-        virtual void StreamIn(std::istream &s);
         enum Type {SINE, TRIANGLE, SQUARE, SAW};
         void WriteWaves();
         void NoteTrigger(int V, int s, int v);
         float m_Freq;
-        Type m_Type;
+        int m_Type;
     private:
         float AdjustPos (float pos);
         // Voice specific parameter
