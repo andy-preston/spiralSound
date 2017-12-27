@@ -31,8 +31,7 @@ static const int IN_PW = 1;
 static const int IN_SHLEN = 2;
 static const int OUT_MAIN = 0;
 
-OscillatorModule::OscillatorModule(const SpiralInfo *info)
-    : SpiralModule(info)
+OscillatorModule::OscillatorModule(const SpiralInfo *info) : SpiralModule(info)
 {
     m_Type = SQUARE;
     m_Octave = 0;
