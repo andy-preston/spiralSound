@@ -72,7 +72,7 @@ void SpiralModule::GetOutput(const char *name, Sample **s)
 {
     for(std::vector<OutputPort*>::iterator outputPort = m_Output.begin();
             outputPort != m_Output.end(); ++outputPort) {
-        if ((*outputPort)->Name == name) {
+        if (strcmp((*outputPort)->Name, name) == 0) {
             *s = (*outputPort)->Data;
             return;
         }
@@ -85,7 +85,7 @@ void SpiralModule::SetInput(const char *name, const Sample *s)
 {
     for(std::vector<InputPort*>::iterator inputPort = m_Input.begin();
             inputPort != m_Input.end(); ++inputPort) {
-        if ((*inputPort)->Name == name) {
+        if (strcmp((*inputPort)->Name, name) == 0) {
             (*inputPort)->Data = s;
             return;
         }

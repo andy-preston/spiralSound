@@ -21,8 +21,6 @@
 
 #include <vector>
 #include <map>
-//#include <string>
-//#include <iostream>
 #include <math.h>
 #include <stdlib.h>
 #include "../SpiralInfo.h"
