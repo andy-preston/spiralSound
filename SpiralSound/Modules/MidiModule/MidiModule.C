@@ -24,7 +24,6 @@
 #include "unistd.h"
 #include "sys/types.h"
 #include "signal.h"
-#include "pthread.h"
 
 using namespace std;
 
@@ -52,7 +51,7 @@ SpiralModule(info)
 {
     int clientId, portId;
 
-    m_DeviceNum = 0;
+    m_midiChannel = 0;
     m_NoteLevel = 0;
     m_TriggerLevel = 0;
     m_PitchBendLevel = 0;
@@ -64,15 +63,15 @@ SpiralModule(info)
     m_AppName = name;
 
     //open input handle
-    if (snd_seq_open(&seq_rhandle, "default", SND_SEQ_OPEN_INPUT, 0) < 0) {
+    if (snd_seq_open(&handle, "default", SND_SEQ_OPEN_INPUT, 0) < 0) {
     	cerr << "Error opening ALSA input sequencer." << endl;
     	exit(1);
     }
 
-    snd_seq_set_client_name(seq_rhandle, m_AppName);
-    clientId = snd_seq_client_id(seq_rhandle);
+    snd_seq_set_client_name(handle, m_AppName);
+    clientId = snd_seq_client_id(handle);
     portId = snd_seq_create_simple_port(
-        seq_rhandle,
+        handle,
         m_AppName,
         SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
         SND_SEQ_PORT_TYPE_APPLICATION
@@ -95,7 +94,7 @@ SpiralModule(info)
     }
 
     /*
-	m_AudioCH->Register("DeviceNum",&m_DeviceNum);
+	m_AudioCH->Register("DeviceNum",&m_midiChannel);
 	m_AudioCH->Register("NoteCut",&m_NoteCut);
 	m_AudioCH->Register("CC",&m_GUIArgs.s);
 	m_AudioCH->RegisterData("Name",ChannelHandler::INPUT,
@@ -105,12 +104,13 @@ SpiralModule(info)
 
 MidiModule::~MidiModule()
 {
-    snd_seq_close (seq_rhandle);
+    snd_seq_close (handle);
 }
 
 void MidiModule::Execute()
 {
     bool triggered;
+    unsigned int c;
 
 	// Done to clear IsEmpty field...
 	GetOutputBuf(0)->Zero();
@@ -119,49 +119,46 @@ void MidiModule::Execute()
 	GetOutputBuf(3)->Zero();
 	GetOutputBuf(4)->Zero();
 	GetOutputBuf(5)->Zero();
-
-	for (unsigned int c=0; c<m_ControlList.size(); c++)
-	{
+	for (c = 0; c < m_ControlList.size(); c++) {
 		GetOutputBuf(c+5)->Zero();
 	}
 
 	triggered = false;
+	MidiEvent Event = /* *new MidiEvent(MidiEvent::ON, 40, 0); // */ GetEvent();
 
-	MidiEvent Event = GetEvent(m_DeviceNum);
-	// get all the midi events since the last check
-	while(Event.m_Type  != MidiEvent::NONE) {
-		if (Event.m_Type == MidiEvent::ON) {
-			triggered = true;
-			m_CurrentNote = Event.m_Note;
-			m_NoteLevel = NoteTable[m_CurrentNote];
-			m_TriggerLevel = Event.m_Volume / 127.0f;
-		}
-		if (Event.m_Type == MidiEvent::OFF) {
-			if (Event.m_Note == m_CurrentNote) {
-				m_TriggerLevel = 0;
-				if (m_NoteCut) {
-                    m_NoteLevel = 0;
+	if (Event.m_Type != MidiEvent::NONE) {
+        switch (Event.m_Type) {
+            case MidiEvent::ON:
+                triggered = true;
+                m_CurrentNote = Event.m_Note;
+                m_NoteLevel = NoteTable[m_CurrentNote];
+                m_TriggerLevel = Event.m_Volume / 127.0f;
+                break;
+            case MidiEvent::OFF:
+                if (Event.m_Note == m_CurrentNote) {
+                    m_TriggerLevel = 0;
+                    if (m_NoteCut) {
+                        m_NoteLevel = 0;
+                    }
                 }
-			}
+                break;
+            case MidiEvent::PITCHBEND:
+                m_PitchBendLevel = Event.m_Volume / 127.0f * 2.0f - 1.0f;
+                break;
+            case MidiEvent::CHANNELPRESSURE:
+                m_ChannelPressureLevel = Event.m_Volume / 127.0f;
+                break;
+            case MidiEvent::AFTERTOUCH:
+                m_AfterTouchLevel = Event.m_Volume / 127.0f;
+                break;
+            case MidiEvent::PARAMETER:
+                // just to make sure
+                if (Event.m_Note >= 0 && Event.m_Note < 128) {
+                    m_ControlLevel[Event.m_Note] = Event.m_Volume / 127.0f;
+			    }
+                break;
 		}
-
-		if (Event.m_Type == MidiEvent::PITCHBEND) {
-			m_PitchBendLevel = Event.m_Volume / 127.0f * 2.0f - 1.0f;
-		}
-		if (Event.m_Type == MidiEvent::CHANNELPRESSURE) {
-			m_ChannelPressureLevel = Event.m_Volume / 127.0f;
-		}
-		if (Event.m_Type == MidiEvent::AFTERTOUCH) {
-			m_AfterTouchLevel = Event.m_Volume / 127.0f;
-		}
-		if (Event.m_Type == MidiEvent::PARAMETER) {
-			// just to make sure
-			if (Event.m_Note >= 0 && Event.m_Note < 128) {
-				m_ControlLevel[Event.m_Note] = Event.m_Volume / 127.0f;
-			}
-		}
-
-		Event = GetEvent(m_DeviceNum);
+		// Event = GetEvent();
 	}
 
 	for (int n = 0; n < spiralInfo->bufferSize; n++) {
@@ -181,7 +178,7 @@ void MidiModule::Execute()
 	// make sure the trigger is registered if it's
 	// note is pressed before releasing the previous one.
 	if (triggered && !m_ContinuousNotes) {
-        SetOutput(1,0,0);
+        SetOutput(1, 0, 0);
     }
 }
 
@@ -193,20 +190,22 @@ void MidiModule::addControl(int s, const char *name)
 
 // returns the next event off the list, or an
 // empty event if the list is exhausted
-MidiEvent MidiModule::GetEvent(int Device)
+MidiEvent MidiModule::GetEvent()
 {
-	if (Device < 0 || Device > 15) {
-		cerr << "GetEvent: Invalid Midi device " << Device << endl;
+	if (m_midiChannel < 0 || m_midiChannel > 15) {
+		cerr << "GetEvent: Invalid Midi channel " << m_midiChannel << endl;
         exit(1);
 	}
 
+    // Fill up m_EventVec with ALL pending messages
     AlsaCollectEvents();
-	if (m_EventVec[Device].size() == 0) {
-		return MidiEvent(MidiEvent::NONE,0,0);
+
+	if (m_EventVec[m_midiChannel].size() == 0) {
+		return MidiEvent(MidiEvent::NONE, 0, 0);
 	}
 
-	MidiEvent event(m_EventVec[Device].front());
-	m_EventVec[Device].pop();
+	MidiEvent event(m_EventVec[m_midiChannel].front());
+	m_EventVec[m_midiChannel].pop();
 
 	return event;
 }
@@ -214,62 +213,62 @@ MidiEvent MidiModule::GetEvent(int Device)
 // code taken and modified from jack_miniFMsynth
 
 void MidiModule::AlsaCollectEvents () {
-     //As Alsa only supports a read or write, we use the read handle here to poll our input
-     //for MIDI events
+    int seq_nfds, l1;
+    struct pollfd *pfds;
 
-     int seq_nfds, l1;
-     struct pollfd *pfds;
+    // get descriptors count to find out how many events are
+    // waiting to be processed
+    seq_nfds = snd_seq_poll_descriptors_count(handle, POLLIN);
+    cerr << seq_nfds << endl;
 
-     //get descriptors count to find out how many events are
-     //waiting to be processed
-     seq_nfds = snd_seq_poll_descriptors_count(seq_rhandle, POLLIN);
-
-     //poll the descriptors to be proccessed and loop through them
-     pfds = new struct pollfd[seq_nfds];
-     snd_seq_poll_descriptors(seq_rhandle, pfds, seq_nfds, POLLIN);
-     for (;;) {
-         if (poll (pfds, seq_nfds, 1000) > 0) {
-            for (l1 = 0; l1 < seq_nfds; l1++) {
-                if (pfds[l1].revents > 0) {
-                   snd_seq_event_t *ev;
-                   // this line looks suspect to me (Andy Preston)
-                   // int l1;
-                   MidiEvent::type MessageType=MidiEvent::NONE;
-                   int Volume=0, Note=0, EventDevice=0;
-                   do {
-                      snd_seq_event_input (seq_rhandle, &ev);
-                      if ((ev->type == SND_SEQ_EVENT_NOTEON) && (ev->data.note.velocity == 0)) {
-                         ev->type = SND_SEQ_EVENT_NOTEOFF;
-                      }
-                      switch (ev->type) {
+    // poll the descriptors to be proccessed and loop through them
+    pfds = new struct pollfd[seq_nfds];
+    snd_seq_poll_descriptors(handle, pfds, seq_nfds, POLLIN);
+    if (poll (pfds, seq_nfds, 1000) > 0) {
+        for (l1 = 0; l1 < seq_nfds; l1++) {
+            if (pfds[l1].revents > 0) {
+                snd_seq_event_t *ev;
+                MidiEvent::type MessageType=MidiEvent::NONE;
+                int Volume=0, Note=0, EventDevice=0;
+                // do {
+                    snd_seq_event_input (handle, &ev);
+                    if (
+                        (ev->type == SND_SEQ_EVENT_NOTEON) &&
+                        (ev->data.note.velocity == 0)
+                    ) {
+                        ev->type = SND_SEQ_EVENT_NOTEOFF;
+                    }
+                    switch (ev->type) {
                         case SND_SEQ_EVENT_PITCHBEND:
-                             // Andy Preston
-                             MessageType=MidiEvent::PITCHBEND;
-                             Volume = (char)((ev->data.control.value / 8192.0)*256);
-                             break;
+                            MessageType=MidiEvent::PITCHBEND;
+                            Volume = (char)(
+                                (ev->data.control.value / 8192.0) * 256
+                            );
+                            break;
                         case SND_SEQ_EVENT_CONTROLLER:
-                             MessageType=MidiEvent::PARAMETER;
-                             Note = ev->data.control.param;
-                             Volume = ev->data.control.value;
-                             break;
+                            MessageType=MidiEvent::PARAMETER;
+                            Note = ev->data.control.param;
+                            Volume = ev->data.control.value;
+                            break;
                         case SND_SEQ_EVENT_NOTEON:
-                             MessageType=MidiEvent::ON;
-                             EventDevice = ev->data.control.channel;
-                             Note = ev->data.note.note;
-                             Volume = ev->data.note.velocity;
-                             break;
+                            MessageType=MidiEvent::ON;
+                            EventDevice = ev->data.control.channel;
+                            Note = ev->data.note.note;
+                            Volume = ev->data.note.velocity;
+                            break;
                         case SND_SEQ_EVENT_NOTEOFF:
-                             MessageType=MidiEvent::ON;
-                             EventDevice = ev->data.control.channel;
-                             Note = ev->data.note.note;
-                             break;
-                      }
-                      m_EventVec[EventDevice].push (MidiEvent (MessageType, Note, Volume));
-                      snd_seq_free_event (ev);
-                   } while (snd_seq_event_input_pending(seq_rhandle, 0) > 0);
-                }
+                            MessageType=MidiEvent::ON;
+                            EventDevice = ev->data.control.channel;
+                            Note = ev->data.note.note;
+                            break;
+                    }
+                    m_EventVec[EventDevice].push (
+                        MidiEvent (MessageType, Note, Volume)
+                    );
+                    snd_seq_free_event (ev);
+                // } while (snd_seq_event_input_pending(handle, 0) > 0);
             }
-         }
-     }
-     delete [] pfds;
+        }
+    }
+    delete [] pfds;
 }

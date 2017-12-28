@@ -41,9 +41,6 @@ class MidiEvent
 	    enum type {
             NONE, ON, OFF, AFTERTOUCH, PARAMETER, CHANNELPRESSURE, PITCHBEND
         };
-        MidiEvent() {
-            m_Type = NONE;
-        }
 	    MidiEvent(type t, int note, float v) {
             m_Type = t;
             m_Note = note;
@@ -60,27 +57,22 @@ class MidiModule : public SpiralModule
      	MidiModule(const SpiralInfo *info, const char *name);
     	virtual ~MidiModule();
     	virtual void Execute();
+        MidiEvent GetEvent();
+        void addControl(int s, const char *name);
         const char *m_AppName;
-        MidiEvent GetEvent(int Device);
-    	int GetDeviceNum() { return m_DeviceNum; }
-    	bool GetNoteCut() { return m_NoteCut; }
-    	bool GetContinuousNotes() { return m_ContinuousNotes; }
+        int m_midiChannel;
+        bool m_NoteCut;
+        bool m_ContinuousNotes;
     private:
-    	void addControl(int s, const char *name);
         queue<MidiEvent> m_EventVec[16];
         void AlsaCollectEvents();
-        void AlsaSendEvent(int Device, const MidiEvent &Event);
-        snd_seq_t *seq_rhandle;
-
-    	int m_DeviceNum;
+        snd_seq_t *handle;
     	float m_NoteLevel;
     	float m_TriggerLevel;
     	float m_PitchBendLevel;
     	float m_ChannelPressureLevel;
     	float m_AfterTouchLevel;
     	float m_ControlLevel[128];
-    	bool m_NoteCut;
-    	bool m_ContinuousNotes;
     	int m_CurrentNote;
     	std::vector<int> m_ControlList;
 };
