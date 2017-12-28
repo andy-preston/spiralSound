@@ -19,22 +19,59 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "../SpiralModule.h"
+#ifndef MIDI_MODULE
+#define MIDI_MODULE
 
-#ifndef MIDI_PLUGIN
-#define MIDI_PLUGIN
+#include "../SpiralModule.h"
+#include <sys/types.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <iostream>
+#include <limits.h>
+#include <queue>
+#include <string>
+#include <alsa/asoundlib.h>
+
+using namespace std;
+
+class MidiEvent
+{
+    public:
+	    enum type {
+            NONE, ON, OFF, AFTERTOUCH, PARAMETER, CHANNELPRESSURE, PITCHBEND
+        };
+        MidiEvent() {
+            m_Type = NONE;
+        }
+	    MidiEvent(type t, int note, float v) {
+            m_Type = t;
+            m_Note = note;
+            m_Volume = v;
+        }
+	    float m_Volume;
+	    type m_Type;
+	    int m_Note;
+};
 
 class MidiModule : public SpiralModule
 {
     public:
-     	MidiModule(const SpiralInfo *info);
+     	MidiModule(const SpiralInfo *info, const char *name);
     	virtual ~MidiModule();
     	virtual void Execute();
+        const char *m_AppName;
+        MidiEvent GetEvent(int Device);
     	int GetDeviceNum() { return m_DeviceNum; }
     	bool GetNoteCut() { return m_NoteCut; }
     	bool GetContinuousNotes() { return m_ContinuousNotes; }
     private:
     	void addControl(int s, const char *name);
+        queue<MidiEvent> m_EventVec[16];
+        void AlsaCollectEvents();
+        void AlsaSendEvent(int Device, const MidiEvent &Event);
+        snd_seq_t *seq_rhandle;
+
     	int m_DeviceNum;
     	float m_NoteLevel;
     	float m_TriggerLevel;

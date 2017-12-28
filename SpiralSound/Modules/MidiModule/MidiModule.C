@@ -21,12 +21,37 @@
 
 #include "MidiModule.h"
 #include "../../NoteTable.h"
-#include "../../Midi.h"
+#include "unistd.h"
+#include "sys/types.h"
+#include "signal.h"
+#include "pthread.h"
 
 using namespace std;
 
-MidiModule::MidiModule(const SpiralInfo *info) : SpiralModule(info)
+static const int MIDI_SCANBUFSIZE=256;
+static const int MIDI_KEYOFFSET=0;
+
+static const unsigned char STATUS_START            = 0x80;
+static const unsigned char STATUS_NOTE_OFF         = 0x80;
+static const unsigned char STATUS_NOTE_ON          = 0x90;
+static const unsigned char STATUS_AFTERTOUCH       = 0xa0;
+static const unsigned char STATUS_CONTROL_CHANGE   = 0xb0;
+static const unsigned char STATUS_PROG_CHANGE      = 0xc0;
+static const unsigned char STATUS_CHANNEL_PRESSURE = 0xd0;
+static const unsigned char STATUS_PITCH_WHEEL      = 0xe0;
+static const unsigned char STATUS_END              = 0xf0;
+static const unsigned char SYSEX_START             = 0xf0;
+static const unsigned char SYSEX_TERMINATOR        = 0xf7;
+static const unsigned char MIDI_CLOCK              = 0xf8;
+static const unsigned char ACTIVE_SENSE            = 0xfe;
+
+static int NKEYS = 30;
+
+MidiModule::MidiModule(const SpiralInfo *info, const char *name) :
+SpiralModule(info)
 {
+    int clientId, portId;
+
     m_DeviceNum = 0;
     m_NoteLevel = 0;
     m_TriggerLevel = 0;
@@ -36,11 +61,27 @@ MidiModule::MidiModule(const SpiralInfo *info) : SpiralModule(info)
     m_NoteCut = false;
     m_ContinuousNotes = false;
     m_CurrentNote = 0;
+    m_AppName = name;
 
-	MidiDevice::Init("SpiralModular", MidiDevice::READ);
-    // TODO: set MIDI device
-    // It'd be nice if we could use a library instead of SSMs MIDI code
-    //MidiDevice::SetDeviceName(info->MidiDevice);
+    //open input handle
+    if (snd_seq_open(&seq_rhandle, "default", SND_SEQ_OPEN_INPUT, 0) < 0) {
+    	cerr << "Error opening ALSA input sequencer." << endl;
+    	exit(1);
+    }
+
+    snd_seq_set_client_name(seq_rhandle, m_AppName);
+    clientId = snd_seq_client_id(seq_rhandle);
+    portId = snd_seq_create_simple_port(
+        seq_rhandle,
+        m_AppName,
+        SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
+        SND_SEQ_PORT_TYPE_APPLICATION
+    );
+
+    if (portId < 0) {
+    	cerr << "Error creating input sequencer port." << endl;
+        exit(1);
+    }
 
 	addOutput("Note", Sample::AUDIO);
 	addOutput("Trigger", Sample::AUDIO);
@@ -64,11 +105,12 @@ MidiModule::MidiModule(const SpiralInfo *info) : SpiralModule(info)
 
 MidiModule::~MidiModule()
 {
-	MidiDevice::PackUpAndGoHome();
+    snd_seq_close (seq_rhandle);
 }
 
 void MidiModule::Execute()
 {
+    bool triggered;
 
 	// Done to clear IsEmpty field...
 	GetOutputBuf(0)->Zero();
@@ -83,102 +125,43 @@ void MidiModule::Execute()
 		GetOutputBuf(c+5)->Zero();
 	}
 
-	bool Triggered=false;
+	triggered = false;
 
-	// midi output
-	if (InputExists(0) && InputExists(1))
-	{
-		static bool TriggeredOut=false;
-		if (GetInput(1,0)>0)
-		{
-			if (!TriggeredOut) // note on
-			{
-				// get the midi note
-				float Freq=GetInputPitch(0,0);
-				int Note=0;
-				for (int n=0; n<132; n++)
-				{
-					if (feq(Freq,NoteTable[n],0.01f))
-					{
-						Note=n;
-						break;
-					}
-				}
-
-				MidiEvent NewEvent(MidiEvent::ON,Note,GetInput(1,0)*128.0f);
-				MidiDevice::Get()->SendEvent(m_DeviceNum,NewEvent);
-				TriggeredOut=true;
-			}
-		}
-		else
-		{
-			if (TriggeredOut) // note off
-			{
-				// get the midi note
-				float Freq=GetInputPitch(0,0);
-				int Note=0;
-				for (int n=0; n<132; n++)
-				{
-					if (feq(Freq,NoteTable[n],0.01f))
-					{
-						Note=n;
-						break;
-					}
-				}
-
-				MidiEvent NewEvent(MidiEvent::OFF,Note,0.0f);
-				MidiDevice::Get()->SendEvent(m_DeviceNum,NewEvent);
-				TriggeredOut=false;
-			}
-		}
-	}
-
-	MidiEvent Event=MidiDevice::Get()->GetEvent(m_DeviceNum);
+	MidiEvent Event = GetEvent(m_DeviceNum);
 	// get all the midi events since the last check
-	while(Event.GetType()!=MidiEvent::NONE)
-	{
-		if (Event.GetType()==MidiEvent::ON)
-		{
-			Triggered=true;
-			m_CurrentNote=Event.GetNote();
-			m_NoteLevel=NoteTable[m_CurrentNote];
-			m_TriggerLevel=Event.GetVolume()/127.0f;
+	while(Event.m_Type  != MidiEvent::NONE) {
+		if (Event.m_Type == MidiEvent::ON) {
+			triggered = true;
+			m_CurrentNote = Event.m_Note;
+			m_NoteLevel = NoteTable[m_CurrentNote];
+			m_TriggerLevel = Event.m_Volume / 127.0f;
 		}
-
-		if (Event.GetType()==MidiEvent::OFF)
-		{
-			if (Event.GetNote()==m_CurrentNote)
-			{
-				m_TriggerLevel=0;
-				if (m_NoteCut) m_NoteLevel=0;
+		if (Event.m_Type == MidiEvent::OFF) {
+			if (Event.m_Note == m_CurrentNote) {
+				m_TriggerLevel = 0;
+				if (m_NoteCut) {
+                    m_NoteLevel = 0;
+                }
 			}
 		}
 
-		if (Event.GetType()==MidiEvent::PITCHBEND)
-		{
-			m_PitchBendLevel=Event.GetVolume()/127.0f*2.0f-1.0f;
+		if (Event.m_Type == MidiEvent::PITCHBEND) {
+			m_PitchBendLevel = Event.m_Volume / 127.0f * 2.0f - 1.0f;
 		}
-
-		if (Event.GetType()==MidiEvent::CHANNELPRESSURE)
-		{
-			m_ChannelPressureLevel=Event.GetVolume()/127.0f;
+		if (Event.m_Type == MidiEvent::CHANNELPRESSURE) {
+			m_ChannelPressureLevel = Event.m_Volume / 127.0f;
 		}
-
-		if (Event.GetType()==MidiEvent::AFTERTOUCH)
-		{
-			m_AfterTouchLevel=Event.GetVolume()/127.0f;
+		if (Event.m_Type == MidiEvent::AFTERTOUCH) {
+			m_AfterTouchLevel = Event.m_Volume / 127.0f;
 		}
-
-		if (Event.GetType()==MidiEvent::PARAMETER)
-		{
+		if (Event.m_Type == MidiEvent::PARAMETER) {
 			// just to make sure
-			if (Event.GetNote()>=0 && Event.GetNote()<128)
-			{
-				m_ControlLevel[Event.GetNote()]=Event.GetVolume()/127.0f;
+			if (Event.m_Note >= 0 && Event.m_Note < 128) {
+				m_ControlLevel[Event.m_Note] = Event.m_Volume / 127.0f;
 			}
 		}
 
-		Event=MidiDevice::Get()->GetEvent(m_DeviceNum);
+		Event = GetEvent(m_DeviceNum);
 	}
 
 	for (int n = 0; n < spiralInfo->bufferSize; n++) {
@@ -187,21 +170,106 @@ void MidiModule::Execute()
 		SetOutput(2, n, m_PitchBendLevel);
 		SetOutput(3, n, m_ChannelPressureLevel);
 		SetOutput(4, n, m_AfterTouchLevel);
-		SetOutput(5, n, MidiDevice::Get()->GetClock());
+        // TODO: this should be GetClock() but I've broken it
+		SetOutput(5, n, 0);
 	}
 
-	for (unsigned int c=0; c<m_ControlList.size(); c++)
-	{
-		GetOutputBuf(c+5)->Set(m_ControlLevel[m_ControlList[c]]);
+	for (unsigned int c = 0; c < m_ControlList.size(); c++) {
+		GetOutputBuf(c + 5)->Set(m_ControlLevel[m_ControlList[c]]);
 	}
 
 	// make sure the trigger is registered if it's
 	// note is pressed before releasing the previous one.
-	if (Triggered && !m_ContinuousNotes) SetOutput(1,0,0);
+	if (triggered && !m_ContinuousNotes) {
+        SetOutput(1,0,0);
+    }
 }
 
 void MidiModule::addControl(int s, const char *name)
 {
 	m_ControlList.push_back(s);
 	addOutput(name, Sample::AUDIO);
+}
+
+// returns the next event off the list, or an
+// empty event if the list is exhausted
+MidiEvent MidiModule::GetEvent(int Device)
+{
+	if (Device < 0 || Device > 15) {
+		cerr << "GetEvent: Invalid Midi device " << Device << endl;
+        exit(1);
+	}
+
+    AlsaCollectEvents();
+	if (m_EventVec[Device].size() == 0) {
+		return MidiEvent(MidiEvent::NONE,0,0);
+	}
+
+	MidiEvent event(m_EventVec[Device].front());
+	m_EventVec[Device].pop();
+
+	return event;
+}
+
+// code taken and modified from jack_miniFMsynth
+
+void MidiModule::AlsaCollectEvents () {
+     //As Alsa only supports a read or write, we use the read handle here to poll our input
+     //for MIDI events
+
+     int seq_nfds, l1;
+     struct pollfd *pfds;
+
+     //get descriptors count to find out how many events are
+     //waiting to be processed
+     seq_nfds = snd_seq_poll_descriptors_count(seq_rhandle, POLLIN);
+
+     //poll the descriptors to be proccessed and loop through them
+     pfds = new struct pollfd[seq_nfds];
+     snd_seq_poll_descriptors(seq_rhandle, pfds, seq_nfds, POLLIN);
+     for (;;) {
+         if (poll (pfds, seq_nfds, 1000) > 0) {
+            for (l1 = 0; l1 < seq_nfds; l1++) {
+                if (pfds[l1].revents > 0) {
+                   snd_seq_event_t *ev;
+                   // this line looks suspect to me (Andy Preston)
+                   // int l1;
+                   MidiEvent::type MessageType=MidiEvent::NONE;
+                   int Volume=0, Note=0, EventDevice=0;
+                   do {
+                      snd_seq_event_input (seq_rhandle, &ev);
+                      if ((ev->type == SND_SEQ_EVENT_NOTEON) && (ev->data.note.velocity == 0)) {
+                         ev->type = SND_SEQ_EVENT_NOTEOFF;
+                      }
+                      switch (ev->type) {
+                        case SND_SEQ_EVENT_PITCHBEND:
+                             // Andy Preston
+                             MessageType=MidiEvent::PITCHBEND;
+                             Volume = (char)((ev->data.control.value / 8192.0)*256);
+                             break;
+                        case SND_SEQ_EVENT_CONTROLLER:
+                             MessageType=MidiEvent::PARAMETER;
+                             Note = ev->data.control.param;
+                             Volume = ev->data.control.value;
+                             break;
+                        case SND_SEQ_EVENT_NOTEON:
+                             MessageType=MidiEvent::ON;
+                             EventDevice = ev->data.control.channel;
+                             Note = ev->data.note.note;
+                             Volume = ev->data.note.velocity;
+                             break;
+                        case SND_SEQ_EVENT_NOTEOFF:
+                             MessageType=MidiEvent::ON;
+                             EventDevice = ev->data.control.channel;
+                             Note = ev->data.note.note;
+                             break;
+                      }
+                      m_EventVec[EventDevice].push (MidiEvent (MessageType, Note, Volume));
+                      snd_seq_free_event (ev);
+                   } while (snd_seq_event_input_pending(seq_rhandle, 0) > 0);
+                }
+            }
+         }
+     }
+     delete [] pfds;
 }
