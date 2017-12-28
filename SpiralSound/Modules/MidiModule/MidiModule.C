@@ -82,6 +82,14 @@ SpiralModule(info)
         exit(1);
     }
 
+    m_Mutex = new pthread_mutex_t;
+    pthread_mutex_init (m_Mutex, NULL);
+    pthread_create (
+        &m_MidiReader,
+        NULL, (void*(*)(void*))MidiReaderCallback,
+        (void*)this
+    );
+
 	addOutput("Note", Sample::AUDIO);
 	addOutput("Trigger", Sample::AUDIO);
 	addOutput("PitchBend", Sample::AUDIO);
@@ -104,6 +112,10 @@ SpiralModule(info)
 
 MidiModule::~MidiModule()
 {
+    pthread_mutex_lock (m_Mutex);
+    pthread_cancel (m_MidiReader);
+    pthread_mutex_unlock (m_Mutex);
+    pthread_mutex_destroy (m_Mutex);
     snd_seq_close (handle);
 }
 
@@ -124,7 +136,7 @@ void MidiModule::Execute()
 	}
 
 	triggered = false;
-	MidiEvent Event = /* *new MidiEvent(MidiEvent::ON, 40, 0); // */ GetEvent();
+	MidiEvent Event = GetEvent();
 
 	if (Event.m_Type != MidiEvent::NONE) {
         switch (Event.m_Type) {
@@ -158,7 +170,7 @@ void MidiModule::Execute()
 			    }
                 break;
 		}
-		// Event = GetEvent();
+		//Event = GetEvent();
 	}
 
 	for (int n = 0; n < spiralInfo->bufferSize; n++) {
@@ -197,15 +209,15 @@ MidiEvent MidiModule::GetEvent()
         exit(1);
 	}
 
-    // Fill up m_EventVec with ALL pending messages
-    AlsaCollectEvents();
-
+    pthread_mutex_lock(m_Mutex);
 	if (m_EventVec[m_midiChannel].size() == 0) {
+        pthread_mutex_unlock(m_Mutex);
 		return MidiEvent(MidiEvent::NONE, 0, 0);
 	}
 
 	MidiEvent event(m_EventVec[m_midiChannel].front());
 	m_EventVec[m_midiChannel].pop();
+    pthread_mutex_unlock(m_Mutex);
 
 	return event;
 }
@@ -216,21 +228,20 @@ void MidiModule::AlsaCollectEvents () {
     int seq_nfds, l1;
     struct pollfd *pfds;
 
-    // get descriptors count to find out how many events are
-    // waiting to be processed
+    // get descriptors count to find out how many events are waiting
     seq_nfds = snd_seq_poll_descriptors_count(handle, POLLIN);
-    cerr << seq_nfds << endl;
 
     // poll the descriptors to be proccessed and loop through them
     pfds = new struct pollfd[seq_nfds];
     snd_seq_poll_descriptors(handle, pfds, seq_nfds, POLLIN);
+threadLoop:
     if (poll (pfds, seq_nfds, 1000) > 0) {
         for (l1 = 0; l1 < seq_nfds; l1++) {
             if (pfds[l1].revents > 0) {
                 snd_seq_event_t *ev;
                 MidiEvent::type MessageType=MidiEvent::NONE;
                 int Volume=0, Note=0, EventDevice=0;
-                // do {
+                do {
                     snd_seq_event_input (handle, &ev);
                     if (
                         (ev->type == SND_SEQ_EVENT_NOTEON) &&
@@ -240,10 +251,9 @@ void MidiModule::AlsaCollectEvents () {
                     }
                     switch (ev->type) {
                         case SND_SEQ_EVENT_PITCHBEND:
-                            MessageType=MidiEvent::PITCHBEND;
-                            Volume = (char)(
-                                (ev->data.control.value / 8192.0) * 256
-                            );
+                            MessageType = MidiEvent::PITCHBEND;
+                            Volume = (char)
+                                ((ev->data.control.value / 8192.0) * 256);
                             break;
                         case SND_SEQ_EVENT_CONTROLLER:
                             MessageType=MidiEvent::PARAMETER;
@@ -262,13 +272,15 @@ void MidiModule::AlsaCollectEvents () {
                             Note = ev->data.note.note;
                             break;
                     }
-                    m_EventVec[EventDevice].push (
-                        MidiEvent (MessageType, Note, Volume)
-                    );
+                    pthread_mutex_lock (m_Mutex);
+                    m_EventVec[EventDevice].push (MidiEvent (MessageType, Note, Volume));
+                    pthread_mutex_unlock (m_Mutex);
                     snd_seq_free_event (ev);
-                // } while (snd_seq_event_input_pending(handle, 0) > 0);
+                } while (snd_seq_event_input_pending(handle, 0) > 0);
             }
         }
     }
-    delete [] pfds;
+    goto threadLoop;
+    // TODO: how is this ever going to be executed?
+    // delete [] pfds;
 }

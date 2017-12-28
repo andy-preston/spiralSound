@@ -22,18 +22,13 @@
 #ifndef MIDI_MODULE
 #define MIDI_MODULE
 
-#include "../SpiralModule.h"
-#include <sys/types.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <iostream>
-#include <limits.h>
 #include <queue>
-#include <string>
-#include <alsa/asoundlib.h>
 
 using namespace std;
+
+#include "../SpiralModule.h"
+#include <pthread.h>
+#include <alsa/asoundlib.h>
 
 class MidiEvent
 {
@@ -64,6 +59,13 @@ class MidiModule : public SpiralModule
         bool m_NoteCut;
         bool m_ContinuousNotes;
     private:
+        pthread_t m_MidiReader;
+        pthread_mutex_t* m_Mutex;
+        static void *MidiReaderCallback (void *o) {
+            ((MidiModule*)o)->AlsaCollectEvents();
+            return NULL;
+        }
+
         queue<MidiEvent> m_EventVec[16];
         void AlsaCollectEvents();
         snd_seq_t *handle;

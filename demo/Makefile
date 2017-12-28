@@ -7,7 +7,7 @@ CFLAGS	=
 CXXFLAGS=	-funsigned-char
 LINK	=	g++
 LFLAGS	=
-LIBS	=   -lao -lm -lasound
+LIBS	=   -lao -lm -lasound -lpthread
 
 OBJECTS = \
 	main.o \
