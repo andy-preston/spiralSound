@@ -35,6 +35,7 @@ int main(int argc, char **argv)
 {
     SpiralInfo *info;
     Synth *synth;
+    MidiModule *midi;
     OscillatorModule *oscillator;
     FilterModule *filter;
     LFOModule *lfo1, *lfo2;
@@ -43,40 +44,53 @@ int main(int argc, char **argv)
     srand(time(NULL));
     info = new SpiralInfo();
 
-    cout << "create synth\n";
+    cerr << "create synth\n";
 	synth = new Synth(info);
 
-    cout << "add osc\n";
+    cerr << "add MIDI" << endl;
+    midi = new MidiModule(info, "SpiralSound");
+    synth->addModule(midi);
+
+    cerr << "add osc" << endl;
     oscillator = new OscillatorModule(info);
     synth->addModule(oscillator);
 
-    cout << "add filter\n";
+    cerr << "add filter" << endl;
     filter = new FilterModule(info);
     synth->addModule(filter);
 
-    cout << "add LFO 1\n";
+    cerr << "add LFO 1" << endl;
     lfo1 = new LFOModule(info);
     lfo1->m_Freq = 1;
     synth->addModule(lfo1);
 
-    cout << "add LFO 2\n";
+    cerr << "add LFO 2" << endl;
     lfo2 = new LFOModule(info);
     synth->addModule(lfo2);
 
-    cout << "add output\n";
+    cerr << "add output" << endl;
     output = new OutputModule(info);
     synth->addModule(output);
 
-    cout << "connect osc -> filter\n";
+    cerr << "connect MIDI -> osc" << endl;
+    synth->connect(midi, "Note", oscillator, "Frequency");
+
+/*
+    cerr << "connect osc -> filter" << endl;
     synth->connect(oscillator, "Output", filter, "Input");
-    cout << "connect LFOs -> filter\n";
+    cerr << "connect LFOs -> filter" << endl;
     synth->connect(lfo1, "Output", filter, "Cutoff");
     synth->connect(lfo2, "Output", filter, "Resonance");
-    cout << "connect filter -> output\n";
+    cerr << "connect filter -> output" << endl;
     synth->connect(filter, "Output", output, "Left Out");
     synth->connect(filter, "Output", output, "Right Out");
+    */
 
-    cout << "run\n";
+    synth->connect(oscillator, "Output", output, "Left Out");
+    synth->connect(oscillator, "Output", output, "Right Out");
+
+
+    cerr << "run" << endl;
     synth->run();
 
 	return 1;
