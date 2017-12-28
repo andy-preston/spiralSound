@@ -65,7 +65,6 @@ class MidiModule : public SpiralModule
             ((MidiModule*)o)->AlsaCollectEvents();
             return NULL;
         }
-
         queue<MidiEvent> m_EventVec[16];
         void AlsaCollectEvents();
         snd_seq_t *handle;

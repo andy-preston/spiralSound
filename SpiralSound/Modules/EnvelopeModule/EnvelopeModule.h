@@ -1,5 +1,7 @@
-/*  SpiralSound
- *  Copyleft (C) 2001 David Griffiths <dave@pawfal.org>
+/* SpiralSound Envelope module
+ *     - Copyleft (C) 2016 Andy Preston <edgeeffect@gmail.com>
+ * based on SpiralSynthModular
+ *     - Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,57 +16,32 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/ 
+ */
 
-#include "../SpiralPlugin.h"
-#include <FL/Fl_Pixmap.H>
+#include "../SpiralModule.h"
 
-#ifndef EnvelopePLUGIN
-#define EnvelopePLUGIN
+#ifndef ENVELOPE_MODULE
+#define ENVELOPE_MODULE
 
-static const int NUM_CHANNELS = 4;
-
-class EnvelopePlugin : public SpiralPlugin
+class EnvelopeModule : public SpiralModule
 {
-public:
- 	EnvelopePlugin();
-	virtual ~EnvelopePlugin();
-	
-	virtual PluginInfo &Initialise(const HostInfo *Host);
-	virtual SpiralGUIType *CreateGUI();
-	virtual void Execute();
-	virtual void Reset();
-
-	virtual void StreamOut(std::ostream &s);
-	virtual void StreamIn(std::istream &s);
-		
-	float GetAttack()           { return m_Attack;     }
-	float GetDecay()            { return m_Decay;      }	
-	float GetSustain()          { return m_Sustain;    }	
-	float GetRelease()          { return m_Release;    }	
-	float GetVolume()           { return m_Volume;     }	
-	float GetTrigThresh()       { return m_TrigThresh; }
-		
-private:
-	// Voice specific parameters
-	bool   m_Trigger;
-	float  m_t;
-	
-	// Common voice parameters
-	float m_Attack;
-	float m_Decay;
-	float m_Sustain;
-	float m_Release;
-	float m_Volume;
-	float m_TrigThresh;
-	float m_SampleTime;
-	
-	float m_Current;
-	
-	friend std::istream &operator>>(std::istream &s, EnvelopePlugin &o);
-	friend std::ostream &operator<<(std::ostream &s, EnvelopePlugin &o);
+    public:
+     	EnvelopeModule(SpiralInfo *info);
+    	virtual ~EnvelopeModule();
+    	virtual void Execute();
+        float m_Attack;
+    	float m_Decay;
+    	float m_Sustain;
+    	float m_Release;
+    	float m_Volume;
+    	float m_TrigThresh;
+    private:
+    	// Voice specific parameters
+    	bool m_Trigger;
+    	float m_time;
+    	// Common voice parameters
+    	float m_SampleTime;
+    	float m_Current;
 };
-std::istream &operator>>(std::istream &s, EnvelopePlugin &o);
-std::ostream &operator<<(std::ostream &s, EnvelopePlugin &o);
 
 #endif

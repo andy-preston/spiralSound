@@ -1,0 +1,5 @@
+../SpiralSound/Modules/EnvelopeModule/EnvelopeModule.o: \
+    ../SpiralSound/Modules/EnvelopeModule/EnvelopeModule.C \
+    ../SpiralSound/Modules/EnvelopeModule/EnvelopeModule.h \
+	../SpiralSound/SpiralInfo.h \
+	../SpiralSound/Sample.h

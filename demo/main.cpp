@@ -28,6 +28,7 @@
 #include "../SpiralSound/Modules/MidiModule/MidiModule.h"
 #include "../SpiralSound/Modules/OscillatorModule/OscillatorModule.h"
 #include "../SpiralSound/Modules/FilterModule/FilterModule.h"
+#include "../SpiralSound/Modules/EnvelopeModule/EnvelopeModule.h"
 #include "../SpiralSound/Modules/LFOModule/LFOModule.h"
 #include "../SpiralSound/Modules/OutputModule/OutputModule.h"
 
@@ -39,6 +40,7 @@ int main(int argc, char **argv)
     OscillatorModule *oscillator;
     FilterModule *filter;
     LFOModule *lfo1, *lfo2;
+    EnvelopeModule *envelope;
     OutputModule *output;
 
     srand(time(NULL));
@@ -68,6 +70,10 @@ int main(int argc, char **argv)
     lfo2 = new LFOModule(info);
     synth->addModule(lfo2);
 
+    cerr << "add envelope" << endl;
+    envelope = new EnvelopeModule(info);
+    synth->addModule(envelope);
+
     cerr << "add output" << endl;
     output = new OutputModule(info);
     synth->addModule(output);
@@ -75,20 +81,22 @@ int main(int argc, char **argv)
     cerr << "connect MIDI -> osc" << endl;
     synth->connect(midi, "Note", oscillator, "Frequency");
 
-/*
     cerr << "connect osc -> filter" << endl;
     synth->connect(oscillator, "Output", filter, "Input");
+
     cerr << "connect LFOs -> filter" << endl;
     synth->connect(lfo1, "Output", filter, "Cutoff");
     synth->connect(lfo2, "Output", filter, "Resonance");
-    cerr << "connect filter -> output" << endl;
-    synth->connect(filter, "Output", output, "Left Out");
-    synth->connect(filter, "Output", output, "Right Out");
-    */
 
-    synth->connect(oscillator, "Output", output, "Left Out");
-    synth->connect(oscillator, "Output", output, "Right Out");
+    cerr << "connect filter -> envelope" << endl;
+    synth->connect(filter, "Output", envelope, "Input");
 
+    cerr << "connect MIDI -> envelope" << endl;
+    synth->connect(midi, "Trigger", envelope, "Trigger");
+
+    cerr << "connect envelope -> output" << endl;
+    synth->connect(envelope, "Output", output, "Left Out");
+    synth->connect(envelope, "Output", output, "Right Out");
 
     cerr << "run" << endl;
     synth->run();

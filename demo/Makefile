@@ -19,9 +19,9 @@ OBJECTS = \
 	../SpiralSound/Modules/OscillatorModule/OscillatorModule.o \
 	../SpiralSound/Modules/FilterModule/FilterModule.o \
 	../SpiralSound/Modules/FilterModule/iir_filter.o \
+	../SpiralSound/Modules/EnvelopeModule/EnvelopeModule.o \
 	../SpiralSound/Modules/LFOModule/LFOModule.o \
 	../SpiralSound/Modules/OutputModule/OutputModule.o
-
 
 TARGET = \
 	demosynth
@@ -53,6 +53,7 @@ include ../SpiralSound/makerules
 include ../SpiralSound/Modules/makerules
 include ../SpiralSound/Modules/MidiModule/makerules
 include ../SpiralSound/Modules/OscillatorModule/makerules
+include ../SpiralSound/Modules/EnvelopeModule/makerules
 include ../SpiralSound/Modules/FilterModule/makerules
 include ../SpiralSound/Modules/LFOModule/makerules
 include ../SpiralSound/Modules/OutputModule/makerules
