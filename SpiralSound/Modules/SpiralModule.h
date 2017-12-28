@@ -31,18 +31,16 @@ static const float MAX_FREQ = 13000;
 class InputPort
 {
     public:
-        InputPort(const char* name, Sample::SampleType type, const Sample* data);
+        InputPort(const char* name, const Sample* data);
         const Sample* Data;
         const char *Name;
-        Sample::SampleType Type;
 };
 
 class OutputPort {
     public:
-        OutputPort(const char* name, Sample::SampleType type, Sample* data);
+        OutputPort(const char* name, Sample* data);
         Sample* Data;
         const char *Name;
-        Sample::SampleType Type;
 };
 
 /*
@@ -143,9 +141,9 @@ class SpiralModule {
             return m_Output[n]->Data != NULL;
         }
 
-        void addOutput(const char* name, Sample::SampleType type);
+        void addOutput(const char* name);
 
-        void addInput(const char* name, Sample::SampleType type);
+        void addInput(const char* name);
 
         // TODO: these 3 will become redundant
         void addIntControl(const char* name, int* data);

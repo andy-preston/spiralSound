@@ -1,5 +1,7 @@
-/*  SpiralLoops
- *  Copyleft (C) 2000 David Griffiths <dave@pawfal.org>
+/* SpiralSound
+ *     - Copyleft (C) 2016 Andy Preston <edgeeffect@gmail.com>
+ * based on SpiralSynthModular
+ *     - Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,11 +16,12 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/ 
+*/
 
 #include <string.h>
 #include "Sample.h"
 #include <iostream>
+#include <assert.h>
 
 Sample::Sample(int Len) :
 m_IsEmpty(true),
@@ -26,7 +29,7 @@ m_DataGranularity(1),//512),
 m_Data(NULL),
 m_Length(0)
 {
-	if (Len) 
+	if (Len)
 	{
 		Allocate(Len);
 	}
@@ -50,7 +53,7 @@ m_Data(NULL),
 m_Length(0)
 {
 	assert(S);
-	Allocate(Len);		
+	Allocate(Len);
 	memcpy(m_Data,S,GetLengthInBytes());
 }
 
@@ -61,15 +64,15 @@ Sample::~Sample()
 }
 
 
-	
+
 bool Sample::Allocate(int Size)
 {
 	Clear();
 	m_Data = new float[Size];
 	m_Length=Size;
-	
+
 	memset(m_Data,0,GetLengthInBytes());
-	
+
 	return (m_Data);
 }
 
@@ -103,13 +106,13 @@ void Sample::Set(float Val)
 
 void Sample::Insert(const Sample &S, int Pos)
 {
-	// do some checking	
+	// do some checking
 	assert(Pos<=GetLength());
 
 	int NewLen = GetLength()+S.GetLength();
 	float *NewBuf = new float [NewLen];
 	int FromPos=0, ToPos=0, TempBufPos=0;
-	
+
 	while (FromPos<=GetLength())
 	{
 		if (FromPos==Pos)
@@ -122,10 +125,10 @@ void Sample::Insert(const Sample &S, int Pos)
 		}
 		else
 		{
-			// this test is needed so the loop can deal 
-			// with samples being "inserted" on to the 
+			// this test is needed so the loop can deal
+			// with samples being "inserted" on to the
 			// very end of the buffer
-			if (FromPos<GetLength()) 
+			if (FromPos<GetLength())
 			{
 				NewBuf[ToPos]=m_Data[FromPos];
 			}
@@ -133,7 +136,7 @@ void Sample::Insert(const Sample &S, int Pos)
 		FromPos++;
 		ToPos++;
 	}
-	
+
 	Clear();
 	m_Data=NewBuf;
 	m_Length=NewLen;
@@ -146,15 +149,15 @@ void Sample::Add(const Sample &S)
 
 void Sample::Mix(const Sample &S, int Pos)
 {
-	// do some checking	
+	// do some checking
 	assert(Pos<GetLength());
-	
+
 	int ToPos=Pos;
-	
+
 	for (int FromPos=0; FromPos<S.GetLength(); FromPos++)
 	{
 		m_Data[ToPos]=m_Data[ToPos]+S[FromPos];
-		
+
 		if (ToPos>GetLength()) ToPos=0;
 		ToPos++;
 	}
@@ -165,33 +168,33 @@ void Sample::Remove(int Start, int End)
 	// do some checking
 	assert(End<GetLength() && Start<GetLength());
 	assert(Start<=End);
-	
+
 	// check the range
 	if (End>GetLength()) End=GetLength();
 	if (Start<0) Start=0;
-	
+
 	// calc lengths and allocate memory
 	int CutLen = End - Start;
 	// has to be granulated by the buffer size
 	CutLen-=CutLen % m_DataGranularity;
-	
+
 	int NewLen = GetLength()-CutLen;
 	float *TempBuf = new float[NewLen];
-	
+
 	int ToPos=0;
-	
+
 	for (int FromPos=0; FromPos<GetLength(); FromPos++)
 	{
 		// copy the areas outside of the cut range
 		if (FromPos<Start || FromPos>End)
 		{
 			TempBuf[ToPos]=m_Data[FromPos];
-			ToPos++;			
+			ToPos++;
 			// check the position is in range of the calculated length
 			assert(ToPos<=NewLen);
 		}
 	}
-	
+
 	Clear();
 	m_Data=TempBuf;
 	m_Length=NewLen;
@@ -202,15 +205,15 @@ void Sample::Reverse(int Start, int End)
 	// do some checking
 	assert(End<GetLength() && Start<GetLength());
 	assert(Start<=End);
-	
+
 	// check the range
 	if (End>GetLength()) End=GetLength();
-	
+
 	int NewLen = End-Start;
 	float *TempBuf = new float[NewLen];
 	int ToPos=0;
 	int FromPos=0;
-	
+
 	// get the reversed sample
 	for (FromPos=End; FromPos>Start; FromPos--)
 	{
@@ -218,16 +221,16 @@ void Sample::Reverse(int Start, int End)
 		ToPos++;
 		assert(ToPos<=NewLen);
 	}
-	
+
 	FromPos=0;
-	
+
 	// overwrite back into place
 	for (ToPos=Start; ToPos<End; ToPos++)
 	{
 		m_Data[ToPos]=TempBuf[FromPos];
 		FromPos++;
 	}
-	
+
 }
 
 void Sample::Move(int Dist)
@@ -236,21 +239,21 @@ void Sample::Move(int Dist)
 	float *TempBuf = new float[Length];
 	int ToPos=0;
 	int FromPos=Dist;
-	
+
 	if (FromPos<0) FromPos+=Length;
-	if (FromPos>Length) FromPos-=Length;	
-	
+	if (FromPos>Length) FromPos-=Length;
+
 	// get the offset sample
 	for (ToPos=0; ToPos<Length; ToPos++)
-	{	
+	{
 		TempBuf[ToPos]=m_Data[FromPos];
 		FromPos++;
 		if (FromPos>=Length) FromPos=0;
 	}
-	
+
 	Clear();
 	m_Data=TempBuf;
-	m_Length=Length;	
+	m_Length=Length;
 }
 
 void Sample::GetRegion(Sample &S, int Start, int End) const
@@ -258,13 +261,13 @@ void Sample::GetRegion(Sample &S, int Start, int End) const
 	// do some checking
 	assert(End<GetLength() && Start<GetLength());
 	assert(Start<=End);
-	
+
 	int Length=End-Start;
 	Length-=Length % m_DataGranularity;
 	S.Allocate(Length);
-	
+
 	int FromPos=Start;
-	
+
 	for (int ToPos=0; ToPos<Length; ToPos++)
 	{
 		S.Set(ToPos,m_Data[FromPos]);
@@ -275,16 +278,16 @@ void Sample::GetRegion(Sample &S, int Start, int End) const
 void Sample::CropTo(int NewLength)
 {
 	assert (NewLength<GetLength());
-	
+
 	float *temp = new float[NewLength];
-		
+
 	for(int n=0; n<NewLength; n++)
 	{
 		temp[n]=m_Data[n];
 	}
-	
+
 	Clear();
-	m_Data=temp;	
+	m_Data=temp;
 	m_Length=NewLength;
 }
 
@@ -293,7 +296,7 @@ void Sample::Expand(int Length)
 {
 	Sample Temp(Length);
 	Temp.Zero();
-	
+
 	Add(Temp);
 }
 
@@ -302,15 +305,15 @@ void Sample::Shrink(int Length)
 {
 	int NewLength=GetLength()-Length;
 	assert(NewLength>0 && NewLength<=GetLength());
-	
+
 	float *temp = new float[NewLength];
-	
+
 	for(int n=0; n<NewLength; n++)
 	{
 		temp[n]=m_Data[n];
 	}
-		
+
 	Clear();
-	m_Data=temp;	
+	m_Data=temp;
 	m_Length=NewLength;
 }

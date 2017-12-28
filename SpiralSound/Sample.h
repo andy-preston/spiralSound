@@ -1,5 +1,7 @@
-/*  SpiralLoops
- *  Copyleft (C) 2000 David Griffiths <dave@pawfal.org>
+/* SpiralSound
+ *     - Copyleft (C) 2016 Andy Preston <edgeeffect@gmail.com>
+ * based on SpiralSynthModular
+ *     - Copyleft (C) 2002 David Griffiths <dave@pawfal.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,14 +21,9 @@
 #ifndef SAMPLE
 #define SAMPLE
 
-#define PLUGINGUI_IN_MODULE_TEST
-
-#include <assert.h>
-#include <limits.h>
 #include <iostream>
+#include <limits.h>
 #include <cstring>
-
-//#define DEBUG
 
 inline float Linear(float bot,float top,float pos,float val1,float val2)
 {
@@ -42,8 +39,6 @@ inline bool feq(float a, float b, float tol)
 class Sample
 {
 public:
-	enum SampleType {AUDIO=0, IMAGE, MIDI};
-
 	Sample(int Len=0);
 	Sample(const Sample &rhs);
 	Sample(const float *S, int Len);
@@ -71,9 +66,6 @@ public:
 
 	inline float &operator[](int i) const
 	{
-		#ifdef DEBUG
-			assert(i>=0 && i<m_Length);
-		#endif
 		return m_Data[i];
 	}
 
@@ -81,11 +73,6 @@ public:
 	inline float operator[](float i) const
 	{
 		int ii=(int)i;
-
-		#ifdef DEBUG
-			assert(ii>=0 && ii<m_Length);
-		#endif
-
 		if (ii==m_Length-1) return m_Data[ii];
 		float t=i-ii;
 		return ((m_Data[ii]*(1-t))+(m_Data[ii+1])*t);
@@ -95,9 +82,6 @@ public:
 	inline void Set(int i, float v)
 	{
 		m_IsEmpty=false;
-		#ifdef DEBUG
-			assert(i>=0 && i<m_Length);
-		#endif
 		m_Data[i]=v;
 	}
 
@@ -113,9 +97,6 @@ public:
 
     void setSpecificData(void *ptr) { m_PluginSpecificData = ptr; }
     void *getSpecificData() { return m_PluginSpecificData; }
-    void setSampleType(SampleType t) { m_SampleType = t; }
-    SampleType getSampleType() { return m_SampleType; }
-
 protected:
 	bool m_IsEmpty;
 
@@ -123,9 +104,7 @@ private:
 	int m_DataGranularity;
 	float *m_Data;
 	long  int  m_Length;
-
 	void *m_PluginSpecificData;
-    SampleType m_SampleType;
 };
 
 #endif

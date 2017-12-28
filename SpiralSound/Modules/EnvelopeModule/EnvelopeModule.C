@@ -39,11 +39,10 @@ EnvelopeModule::EnvelopeModule(SpiralInfo *info) : SpiralModule(info)
     m_Current = 0;
     m_SampleTime = 1.0 / (float)(info->sampleRate);
 
-	addInput("Trigger", Sample::AUDIO);
-    addInput("Input", Sample::AUDIO);
-	addInput("Input", Sample::AUDIO);
-	addOutput("CV", Sample::AUDIO);
-	addOutput("Output", Sample::AUDIO);
+    addInput("Trigger");
+    addInput("Input");
+    addOutput("CV");
+    addOutput("Output");
 
     /*
 	m_AudioCH->Register("Attack",&m_Attack);

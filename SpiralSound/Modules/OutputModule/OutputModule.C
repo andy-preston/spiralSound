@@ -52,8 +52,8 @@ OutputModule::OutputModule(SpiralInfo* info) : AudioDriver(info)
         exit(1);
     }
 	m_IsTerminal = true; // we are an output.
-	addInput("Left Out", Sample::AUDIO);
-	addInput("Right Out", Sample::AUDIO);
+	addInput("Left");
+	addInput("Right");
     // TODO: we might care about cb_Blocking in the future
     // but it segfaults right now
     // cb_Blocking(m_Parent, true);

@@ -90,12 +90,12 @@ SpiralModule(info)
         (void*)this
     );
 
-	addOutput("Note", Sample::AUDIO);
-	addOutput("Trigger", Sample::AUDIO);
-	addOutput("PitchBend", Sample::AUDIO);
-	addOutput("ChannelPressure", Sample::AUDIO);
-	addOutput("Aftertouch", Sample::AUDIO);
-	addOutput("Clock", Sample::AUDIO);
+	addOutput("Note");
+	addOutput("Trigger");
+	addOutput("PitchBend");
+	addOutput("ChannelPressure");
+	addOutput("Aftertouch");
+	addOutput("Clock");
 
 	for (int n = 0; n < 128; n++) {
         m_ControlLevel[n] = 0;
@@ -197,7 +197,7 @@ void MidiModule::Execute()
 void MidiModule::addControl(int s, const char *name)
 {
 	m_ControlList.push_back(s);
-	addOutput(name, Sample::AUDIO);
+	addOutput(name);
 }
 
 // returns the next event off the list, or an

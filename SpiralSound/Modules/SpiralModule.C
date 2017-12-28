@@ -20,17 +20,15 @@
 
 using namespace std;
 
-InputPort::InputPort(const char* name, Sample::SampleType type, const Sample* data)
+InputPort::InputPort(const char* name, const Sample* data)
 {
     Name = name;
-    Type = type;
     Data = data;
 }
 
-OutputPort::OutputPort(const char* name, Sample::SampleType type, Sample* data)
+OutputPort::OutputPort(const char* name, Sample* data)
 {
     Name = name;
-    Type = type;
     Data = data;
 }
 
@@ -48,23 +46,16 @@ SpiralModule::~SpiralModule()
 {
 }
 
-/*
-void SpiralModule::UpdateChannelHandler()
-{
-    m_AudioCH->UpdateDataNow();
-}
-*/
-
-void SpiralModule::addOutput(const char* name, Sample::SampleType type)
+void SpiralModule::addOutput(const char* name)
 {
 	Sample* sample = new Sample(spiralInfo->bufferSize);
-    OutputPort* port = new OutputPort(name, type, sample);
+    OutputPort* port = new OutputPort(name, sample);
 	m_Output.push_back(port);
 }
 
-void SpiralModule::addInput(const char* name, Sample::SampleType type)
+void SpiralModule::addInput(const char* name)
 {
-    InputPort* port = new InputPort(name, type, NULL);
+    InputPort* port = new InputPort(name, NULL);
     m_Input.push_back(port);
 }
 

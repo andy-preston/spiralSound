@@ -95,8 +95,8 @@ int main(int argc, char **argv)
     synth->connect(midi, "Trigger", envelope, "Trigger");
 
     cerr << "connect envelope -> output" << endl;
-    synth->connect(envelope, "Output", output, "Left Out");
-    synth->connect(envelope, "Output", output, "Right Out");
+    synth->connect(envelope, "Output", output, "Left");
+    synth->connect(envelope, "Output", output, "Right");
 
     cerr << "run" << endl;
     synth->run();

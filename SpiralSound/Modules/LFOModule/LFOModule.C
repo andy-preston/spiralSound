@@ -37,9 +37,9 @@ LFOModule::LFOModule(const SpiralInfo *info) : SpiralModule(info)
     }
     WriteWaves();
 
-    addOutput("Output", Sample::AUDIO);
-    addOutput("'Cosine' Output", Sample::AUDIO);
-    addOutput("Inverted Output", Sample::AUDIO);
+    addOutput("Output");
+    addOutput("'Cosine' Output");
+    addOutput("Inverted Output");
     addFloatControl("Freq", &m_Freq);
     addIntControl("Type", &m_Type);
 }
