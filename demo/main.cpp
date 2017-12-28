@@ -67,10 +67,12 @@ int main(int argc, char **argv)
     output = new OutputModule(info);
     synth->addModule(output);
 
-    cout << "connect\n";
+    cout << "connect osc -> filter\n";
     synth->connect(oscillator, "Output", filter, "Input");
+    cout << "connect LFOs -> filter\n";
     synth->connect(lfo1, "Output", filter, "Cutoff");
     synth->connect(lfo2, "Output", filter, "Resonance");
+    cout << "connect filter -> output\n";
     synth->connect(filter, "Output", output, "Left Out");
     synth->connect(filter, "Output", output, "Right Out");
 

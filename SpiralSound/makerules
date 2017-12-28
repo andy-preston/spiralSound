@@ -1,0 +1,15 @@
+../SpiralSound/Synth.o: \
+	../SpiralSound/Synth.C \
+	../SpiralSound/Synth.h \
+	../SpiralSound/SpiralInfo.h \
+	../SpiralSound/Modules/SpiralModule.h
+
+../SpiralSound/SpiralInfo.o: \
+	../SpiralSound/SpiralInfo.C \
+	../SpiralSound/SpiralInfo.h \
+	../SpiralSound/Sample.h
+
+../SpiralSound/Sample.o: \
+	../SpiralSound/Sample.C \
+	../SpiralSound/Sample.h \
+	../SpiralSound/SpiralInfo.h

@@ -1,0 +1,5 @@
+../SpiralSound/Modules/SpiralModule.o: \
+	../SpiralSound/Modules/SpiralModule.C \
+	../SpiralSound/Modules/SpiralModule.h \
+	../SpiralSound/SpiralInfo.h \
+	../SpiralSound/Sample.h

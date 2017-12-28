@@ -1,0 +1,5 @@
+../SpiralSound/Modules/LFOModule/LFOModule.o: \
+	../SpiralSound/Modules/LFOModule/LFOModule.C \
+	../SpiralSound/Modules/LFOModule/LFOModule.h \
+	../SpiralSound/SpiralInfo.h \
+	../SpiralSound/Sample.h

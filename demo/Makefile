@@ -9,34 +9,6 @@ LINK	=	g++
 LFLAGS	=
 LIBS	=   -lao -lm
 
-####### Files
-
-HEADERS = \
-	../SpiralSound/Synth.h \
-	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/Sample.h \
-	../SpiralSound/RiffWav.h \
-	../SpiralSound/Modules/SpiralModule.h \
-	../SpiralSound/Modules/MidiModule/MidiModule.h \
-	../SpiralSound/Modules/OscillatorModule/OscillatorModule.h \
-	../SpiralSound/Modules/FilterModule/FilterModule.h \
-	../SpiralSound/Modules/FilterModule/iir_filter.h \
-	../SpiralSound/Modules/LFOModule/LFOModule.h \
-	../SpiralSound/Modules/OutputModule/OutputModule.h
-
-SOURCES = \
-	main.cpp \
-	../SpiralSound/Synth.C \
-	../SpiralSound/SpiralInfo.C \
-	../SpiralSound/Sample.C \
-	../SpiralSound/Modules/SpiralModule.C \
-	../SpiralSound/Modules/MidiModule/MidiModule.C \
-	../SpiralSound/Modules/OscillatorModule/OscillatorModule.C \
-	../SpiralSound/Modules/FilterModule/FilterModule.C \
-	../SpiralSound/Modules/FilterModule/iir_filter.C \
-	../SpiralSound/Modules/LFOModule/LFOModule.C \
-	../SpiralSound/Modules/OutputModule/OutputModule.C
-
 OBJECTS = \
 	main.o \
 	../SpiralSound/Synth.o \
@@ -49,6 +21,7 @@ OBJECTS = \
 	../SpiralSound/Modules/FilterModule/iir_filter.o \
 	../SpiralSound/Modules/LFOModule/LFOModule.o \
 	../SpiralSound/Modules/OutputModule/OutputModule.o
+
 
 TARGET = \
 	demosynth
@@ -74,62 +47,12 @@ clean:
 ####### Compile
 
 main.o : \
-	main.cpp \
-	../SpiralSound/Synth.h
+	main.cpp
 
-../SpiralSound/Synth.o: \
-	../SpiralSound/Synth.C \
-	../SpiralSound/Synth.h \
-	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/Modules/SpiralModule.h
-
-../SpiralSound/SpiralInfo.o: \
-	../SpiralSound/SpiralInfo.C \
-	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/Sample.h
-
-../SpiralSound/Sample.o: \
-	../SpiralSound/Sample.C \
-	../SpiralSound/Sample.h \
-	../SpiralSound/SpiralInfo.h
-
-../SpiralSound/Modules/SpiralModule.o: \
-	../SpiralSound/Modules/SpiralModule.C \
-	../SpiralSound/Modules/SpiralModule.h \
-	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/Sample.h
-
-../SpiralSound/Modules/MidiModule/MidiModule.o: \
-	../SpiralSound/Modules/MidiModule/MidiModule.C \
-	../SpiralSound/Modules/MidiModule/MidiModule.h \
-	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/Sample.h
-
-../SpiralSound/Modules/OscillatorModule/OscillatorModule.o: \
-	../SpiralSound/Modules/OscillatorModule/OscillatorModule.C \
-	../SpiralSound/Modules/OscillatorModule/OscillatorModule.h \
-	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/Sample.h
-
-../SpiralSound/Modules/FilterModule/FilterModule.o: \
-	../SpiralSound/Modules/FilterModule/FilterModule.C \
-	../SpiralSound/Modules/FilterModule/FilterModule.h \
-	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/Sample.h
-
-../SpiralSound/Modules/FilterModule/iir_filter.o: \
-	../SpiralSound/Modules/FilterModule/iir_filter.C \
-	../SpiralSound/Modules/FilterModule/iir_filter.h
-
-../SpiralSound/Modules/LFOModule/LFOModule.o: \
-	../SpiralSound/Modules/LFOModule/LFOModule.C \
-	../SpiralSound/Modules/LFOModule/LFOModule.h \
-	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/Sample.h
-
-../SpiralSound/Modules/OutputModule/OutputModule.o: \
-	../SpiralSound/Modules/OutputModule/OutputModule.C \
-	../SpiralSound/Modules/OutputModule/OutputModule.h \
-	../SpiralSound/SpiralInfo.h \
-	../SpiralSound/Sample.h \
-	../SpiralSound/RiffWav.h
+include ../SpiralSound/makerules
+include ../SpiralSound/Modules/makerules
+include ../SpiralSound/Modules/MidiModule/makerules
+include ../SpiralSound/Modules/OscillatorModule/makerules
+include ../SpiralSound/Modules/FilterModule/makerules
+include ../SpiralSound/Modules/LFOModule/makerules
+include ../SpiralSound/Modules/OutputModule/makerules
