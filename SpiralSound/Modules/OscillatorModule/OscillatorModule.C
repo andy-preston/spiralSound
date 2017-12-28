@@ -49,9 +49,9 @@ OscillatorModule::OscillatorModule(const SpiralInfo *info) : SpiralModule(info)
 	m_LastFreq = 0;
 
     // Input types might be wrong as these are CV inputs not audio
-    addInput("Frequency CV", Sample::AUDIO);
-    addInput("PulseWidth CV", Sample::AUDIO);
-    addInput("Sample & Hold length CV", Sample::AUDIO);
+    addInput("Frequency", Sample::AUDIO);
+    addInput("PulseWidth", Sample::AUDIO);
+    addInput("Sample & Hold length", Sample::AUDIO);
     addOutput("Output", Sample::AUDIO);
 	addIntControl("Octave", &m_Octave);
 	addFloatControl("FineFreq", &m_FineFreq);
