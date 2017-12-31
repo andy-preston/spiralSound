@@ -1,8 +1,9 @@
 SpiralSound
 ===========
 
-Last changed 27 December 2017
-(Last time I was typing here it was 11-March-2004)
+Last changed 31 December 2017
+(It's strange coming back here and typing stuff where I haven't been since
+March-2004)
 
 SpiralSound is open source software, distributed under the General
 Public License (GPL). See the file COPYING.
@@ -13,7 +14,7 @@ SpiralSound is the same codebase as good old SpiralSynthModular reduced down
 to a library to achieve the same results programatically rather than using a
 GUI.
 
-Where SSM was a straight software modular synth SpiralSound is more of a kit
+Where SSM was a straight software modular synth, SpiralSound is more of a kit
 for building your own soft-synths.
 
 Warning
@@ -23,20 +24,6 @@ Whilst I'm doing the basic reworking of SSM into SpiralSound - there's a lot
 of GIT history rewriting going on. If you check this code out don't be surprised
 if when you come to do a PULL everything goes kerpooie!
 
-
-Dependancies
-------------
-
-LADSPA plugins  (http://www.ladspa.org)
-
-The original SpiralSynthModular used LADSPA to provide extra plugins.
-At this stage the LADSPA code hasn't been "converted"
-
-libao (http://www.xiph.org/ao/)
-
-At least in prototype versions of spiralSound, I'm using libao to output
-the sound. This is available in most Linux distributions.
-
 Installing
 ----------
 
@@ -45,13 +32,28 @@ But as this is more of a construction kit than an application in itself,
 it shouldn't take you that much time to work out which libraries to link
 and where they live.
 
-to compile the demo program cd into the demo directory and run make.
+To compile the demo program cd into the demo directory and run make.
 
-LRDF support for LADSPA plugins
--------------------------------
+Dependencies
+------------
 
-(**not used in the current version - this section of the readme could end
-up being deleted.**)
+### libao
+
+http://www.xiph.org/ao/
+
+At least in prototype versions of spiralSound, I'm using libao to output
+the sound. This is available in most Linux distributions.
+
+Old Dependencies That SSM Had and SpiralSound May or May Not have
+-----------------------------------------------------------------
+
+### LADSPA plugins
+
+http://www.ladspa.org
+
+The original SpiralSynthModular used LADSPA to provide extra plugins.
+
+### LRDF support for LADSPA plugins
 
 http://plugin.org.uk/releases/lrdf/
 http://www.redland.opensource.ac.uk/raptor/
@@ -60,13 +62,9 @@ If you have the lrdf library installed on your system,
 the LADSPAPlugin will automatically use it.
 
 To disable detection of this this, use the configure option:
-./configure --disable-liblrdf
+    ./configure --disable-liblrdf
 
-Jack support
-------------
-
-(**not used in the current version - this section of the readme could end
-up being deleted.**)
+### Jack support
 
 http://jackit.sourceforge.net
 
@@ -74,13 +72,9 @@ If you have jack installed on your system, you can use it via the
 JackModule.
 
 To disable detection of jack, use the configure option:
-./configure --disable-jack
+    ./configure --disable-jack
 
-LibSndFile Support
-------------------
-
-(**not used in the current version - this section of the readme could end
-up being deleted.**)
+### LibSndFile Support
 
 http://www.zip.com.au/~erikd/libsndfile/
 
@@ -88,8 +82,7 @@ If you have libsndfile installed on you system; PoshSampler, Streamer,
 and SpiralLoops load any audio format/file that libsndfile can.
 
 To disable detection of this, use the configure option:
-./configure --disable-sndfile
-
+   ./configure --disable-sndfile
 
 Setting up your .spiralmodular file
 -----------------------------------
