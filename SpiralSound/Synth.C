@@ -22,7 +22,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <dlfcn.h>
 #include "Synth.h"
 
 using namespace std;
