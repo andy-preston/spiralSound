@@ -1,0 +1,7 @@
+config BR2_PACKAGE_SPIRAL_SOUND
+    bool "spiral_sound"
+    select BR2_PACKAGE_ALSA_LIB
+    select BR2_PACKAGE_LIBAO
+	depends on BR2_TOOLCHAIN_HAS_THREADS    
+    help
+        SpiralSound from edgeeffect

@@ -1,13 +1,14 @@
 ####### Compiler, tools and options
 
-CC		=	gcc
-CXX		=	g++
-INCPATH	=   /usr/include/c++/4.8/
-CFLAGS	=
-CXXFLAGS=	-funsigned-char
-LINK	=	g++
-LFLAGS	=
-LIBS	=   -lao -lm -lasound -lpthread
+CC                 = gcc
+CXX                = g++
+CFLAGS_FOR_BUILD   = -O2
+CXXFLAGS_FOR_BUILD = -I/usr/include/c++/4.8/
+CFLAGS             =
+CXXFLAGS           =
+LINK               = $(CXX)
+LFLAGS             =
+LIBS               = -lao -lm -lasound -lpthread
 
 OBJECTS = \
 	main.o \
@@ -31,10 +32,10 @@ TARGET = \
 .SUFFIXES: .C .c
 
 .C.o:
-	$(CXX) -c $(CXXFLAGS) -I $(INCPATH) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(CXXFLAGS_FOR_BUILD) -o $@ $<
 
 .c.o:
-	$(CC) -c $(CFLAGS) -I $(INCPATH) -o $@ $<
+	$(CC) -c $(CFLAGS) $(CFLAGS_FOR_BUILD) -o $@ $<
 
 ####### Build rules
 
