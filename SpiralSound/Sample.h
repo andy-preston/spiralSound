@@ -95,8 +95,8 @@ public:
 
 	void SetDataGranularity(int s) { m_DataGranularity=s; }
 
-    void setSpecificData(void *ptr) { m_PluginSpecificData = ptr; }
-    void *getSpecificData() { return m_PluginSpecificData; }
+    //void setSpecificData(void *ptr) { m_PluginSpecificData = ptr; }
+    //void *getSpecificData() { return m_PluginSpecificData; }
 protected:
 	bool m_IsEmpty;
 
@@ -104,7 +104,7 @@ private:
 	int m_DataGranularity;
 	float *m_Data;
 	long  int  m_Length;
-	void *m_PluginSpecificData;
+	//void *m_PluginSpecificData;
 };
 
 #endif
