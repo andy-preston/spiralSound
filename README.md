@@ -17,12 +17,16 @@ GUI.
 Where SSM was a straight software modular synth, SpiralSound is more of a kit
 for building your own soft-synths.
 
+
+
 Warning
 -------
 
 Whilst I'm doing the basic reworking of SSM into SpiralSound - there's a lot
 of GIT history rewriting going on. If you check this code out don't be surprised
 if when you come to do a PULL everything goes kerpooie!
+
+
 
 Installing
 ----------
@@ -34,6 +38,8 @@ and where they live.
 
 To compile the demo program cd into the demo directory and run make.
 
+
+
 Dependencies
 ------------
 
@@ -43,6 +49,22 @@ http://www.xiph.org/ao/
 
 At least in prototype versions of spiralSound, I'm using libao to output
 the sound. This is available in most Linux distributions.
+
+### alsa-lib
+
+Needed to handle MIDI signals - if you're not going to use MIDI, you'll
+not need this or libpthread
+
+### libpthread
+
+Part of GLIBC (or uClibc) posix threading library
+needed by alsa sound library and spiralSound's MIDI code
+
+### libm
+
+Part of GLIBC (or uClibc) library of C maths functions
+
+
 
 Old Dependencies That SSM Had and SpiralSound May or May Not have
 -----------------------------------------------------------------
@@ -84,6 +106,8 @@ and SpiralLoops load any audio format/file that libsndfile can.
 To disable detection of this, use the configure option:
    ./configure --disable-sndfile
 
+
+
 Setting up your .spiralmodular file
 -----------------------------------
 
@@ -103,6 +127,8 @@ the realtime output doesn't.
     FragmentCount = 8     - Subbuffer count, -1 computes a suitable size,
                             setting to 4 or 8 gets better latencies.
     Samplerate    = 44100 - Sets the samplerate
+
+
 
 Disclaimer
 ----------
