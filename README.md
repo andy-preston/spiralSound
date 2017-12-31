@@ -50,8 +50,8 @@ to compile the demo program cd into the demo directory and run make.
 LRDF support for LADSPA plugins
 -------------------------------
 
-(not used in the current version - this section of the readme could end
-up being deleted.)
+(**not used in the current version - this section of the readme could end
+up being deleted.**)
 
 http://plugin.org.uk/releases/lrdf/
 http://www.redland.opensource.ac.uk/raptor/
@@ -65,8 +65,8 @@ To disable detection of this this, use the configure option:
 Jack support
 ------------
 
-(not used in the current version - this section of the readme could end
-up being deleted.)
+(**not used in the current version - this section of the readme could end
+up being deleted.**)
 
 http://jackit.sourceforge.net
 
@@ -79,8 +79,8 @@ To disable detection of jack, use the configure option:
 LibSndFile Support
 ------------------
 
-(not used in the current version - this section of the readme could end
-up being deleted.)
+(**not used in the current version - this section of the readme could end
+up being deleted.**)
 
 http://www.zip.com.au/~erikd/libsndfile/
 
@@ -94,8 +94,8 @@ To disable detection of this, use the configure option:
 Setting up your .spiralmodular file
 -----------------------------------
 
-(This info can be added to your own programs - this section of the readme needs
-updating)
+(**This info can be added to your own programs - this section of the readme needs
+updating**)
 
 This file contains all the setup variables for the program. Thes values can be
 edited with the options window whilst running SSM.
@@ -105,12 +105,11 @@ on your machine. This is usually tradeoff between quality and responsiveness
 and then record them at higher settings. The wav file will sound fine, even if
 the realtime output doesn't.
 
-BufferSize        = 512         - Size of sample buffer to be calculated each cycle.
-FragmentSize      = 256         - Subbuffer size sent to the soundcard
-FragmentCount     = 8           - Subbuffer count, -1 computes a suitable size,
-                                  setting to 4 or 8 gets better latencies.
-Samplerate        = 44100       - Sets the samplerate
-
+    BufferSize    = 512   - Size of sample buffer to be calculated each cycle.
+    FragmentSize  = 256   - Subbuffer size sent to the soundcard
+    FragmentCount = 8     - Subbuffer count, -1 computes a suitable size,
+                            setting to 4 or 8 gets better latencies.
+    Samplerate    = 44100 - Sets the samplerate
 
 Disclaimer
 ----------
